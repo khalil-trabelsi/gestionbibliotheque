@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.controller;
 
+import com.isima.gestionbibliotheque.dto.AuthRequestDto;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,4 +30,12 @@ public class AuthController {
         log.info("New user: "+ user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
+
+    @PostMapping(path="/login")
+    public ResponseEntity<String> login(@RequestBody AuthRequestDto authRequestDto) {
+        String token = this.userService.login(authRequestDto);
+        return ResponseEntity.ok(token);
+    }
 }
+
+

@@ -18,6 +18,7 @@ public class JwtServiceImpl implements JwtService {
     private static final long EXPIRATION_TIME = 86400000;
 
     public String generateToken(String username) {
+        log.info("key: "+SECRET_KEY);
         return Jwts
                 .builder()
                 .setSubject(username)
