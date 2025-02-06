@@ -10,7 +10,6 @@ import java.util.Collection;
 @NoArgsConstructor
 @Data
 public class CustomUserDetails implements UserDetails {
-
     private Long id;
     private String username;
     private String password;
@@ -29,4 +28,6 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return username;
     }
+
+    public Long getUserId() { return id; }
 }

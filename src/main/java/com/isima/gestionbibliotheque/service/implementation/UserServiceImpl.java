@@ -1,11 +1,12 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
-import com.isima.gestionbibliotheque.dto.AuthRequestDto;
+import com.isima.gestionbibliotheque.dto.auth.AuthRequestDto;
 import com.isima.gestionbibliotheque.model.CustomUserDetails;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.JwtService;
 import com.isima.gestionbibliotheque.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -38,7 +40,7 @@ public class UserServiceImpl implements UserService {
        this.passwordEncoder = passwordEncoder;
     }
     @Override
-    public User save(User user) {
+    public User register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(new Date());
         return userRepository.save(user);
@@ -49,6 +51,7 @@ public class UserServiceImpl implements UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDto.getUsername(),
                 authRequestDto.getPassword()));
         CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(authRequestDto.getUsername());
+        log.info("Usernmae: "+customUserDetails.getUsername());
         return jwtService.generateToken(customUserDetails.getUsername());
     }
 

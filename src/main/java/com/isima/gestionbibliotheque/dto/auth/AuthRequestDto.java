@@ -1,4 +1,4 @@
-package com.isima.gestionbibliotheque.dto;
+package com.isima.gestionbibliotheque.dto.auth;
 
 import lombok.*;
 @Data

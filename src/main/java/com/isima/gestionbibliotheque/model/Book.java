@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Book {
     private String coverImageUrl;
     private Date createdAt;
     private String author;
+    @JsonBackReference
     @OneToMany(mappedBy = "book")
     private List<UserBook> userBooks = new ArrayList<>();
     @ManyToMany

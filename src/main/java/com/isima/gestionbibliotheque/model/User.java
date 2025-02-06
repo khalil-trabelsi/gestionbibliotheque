@@ -1,5 +1,8 @@
 package com.isima.gestionbibliotheque.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +13,7 @@ import java.util.*;
 @Table(name="users")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +22,10 @@ public class User {
     private String username;
     @Column(unique = true)
     private String email;
+    @JsonIgnore
     private String password;
     private Date createdAt;
+    @JsonBackReference
     @OneToMany(mappedBy = "user")
     @Column(name = "user_book")
     private List<UserBook> userBooks = new ArrayList<>();
