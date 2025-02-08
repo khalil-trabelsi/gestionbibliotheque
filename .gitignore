@@ -34,3 +34,4 @@ build/
 
 ### H2 DB Generated file ###
 db.mv.db
+db.trace.db

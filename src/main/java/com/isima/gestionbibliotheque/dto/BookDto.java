@@ -1,13 +1,12 @@
 package com.isima.gestionbibliotheque.dto;
 
-import com.isima.gestionbibliotheque.model.Book;
-import com.isima.gestionbibliotheque.model.Collection;
-import com.isima.gestionbibliotheque.model.UserBook;
+import com.isima.gestionbibliotheque.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -21,12 +20,12 @@ public class BookDto {
     private String isbn;
     private String title;
     private String subtitle;
-    private Date publicationYear;
-    private String publisher;
+    private LocalDate publishDate;
+    private List<Publisher> publishers;
     private String description;
     private String coverImageUrl;
     private Date createdAt;
-    private String author;
+    private List<Author> authors;
     private List<UserBook> userBooks = new ArrayList<>();
     private List<Collection> collections = new ArrayList<>();
 
@@ -37,12 +36,12 @@ public class BookDto {
                         .isbn(book.getIsbn())
                         .title(book.getTitle())
                         .subtitle(book.getSubtitle())
-                        .publicationYear(book.getPublicationYear())
-                        .publisher(book.getPublisher())
+                        .publishDate(book.getPublishDate())
+                        .publishers(book.getPublishers())
                         .description(book.getDescription())
                         .coverImageUrl(book.getCoverImageUrl())
                         .createdAt(book.getCreatedAt())
-                        .author(book.getAuthor())
+                        .authors(book.getAuthors())
                         .userBooks(book.getUserBooks())
                         .collections(book.getCollections())
                         .build();
@@ -58,13 +57,13 @@ public class BookDto {
         book.setIsbn(bookDto.getIsbn());
         book.setTitle(bookDto.getTitle());
         book.setTitle(bookDto.getSubtitle());
-        book.setPublicationYear(bookDto.getPublicationYear());
-        book.setPublisher(bookDto.getPublisher());
+        book.setPublishDate(bookDto.getPublishDate());
+        book.setPublishers(bookDto.getPublishers());
         book.setDescription(bookDto.getDescription());
         book.setCollections(bookDto.getCollections());
         book.setCreatedAt(bookDto.getCreatedAt());
         book.setCoverImageUrl(bookDto.getCoverImageUrl());
-        book.setAuthor(bookDto.getAuthor());
+        book.setAuthors(bookDto.getAuthors());
         book.setUserBooks(bookDto.getUserBooks());
 
         return book;

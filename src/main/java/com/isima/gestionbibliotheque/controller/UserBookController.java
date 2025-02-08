@@ -1,10 +1,12 @@
 package com.isima.gestionbibliotheque.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.isima.gestionbibliotheque.dto.BookRequest;
 import com.isima.gestionbibliotheque.dto.UserBookDto;
 import com.isima.gestionbibliotheque.model.CustomUserDetails;
 import com.isima.gestionbibliotheque.model.UserBook;
 import com.isima.gestionbibliotheque.service.UserBookService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @Slf4j
 @RequestMapping("/api/user_books")
+@Tag(name = "UserBook")
 public class UserBookController {
 
     private final UserBookService userBookService;
@@ -33,17 +36,16 @@ public class UserBookController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserBookDto> addUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) {
-        log.info(String.format("Current user adding book %s", userDetails.getUsername()));
+    public ResponseEntity<UserBookDto> addUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) throws JsonProcessingException {
         CustomUserDetails user = (CustomUserDetails) userDetails;
         UserBook userBook = userBookService.addBook(
-                bookRequest.getBook(),
+                bookRequest.getIsbn(),
                 user.getId(),
                 bookRequest.getStatus(),
                 bookRequest.getLocation(),
                 bookRequest.getRating()
         );
-
+        log.info("wotk");
         UserBookDto userBookDto = UserBookDto.fromEntity(userBook);
             return new ResponseEntity<>(userBookDto, HttpStatus.CREATED);
     }
