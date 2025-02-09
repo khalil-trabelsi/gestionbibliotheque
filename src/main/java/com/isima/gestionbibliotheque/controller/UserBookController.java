@@ -29,7 +29,11 @@ public class UserBookController {
     public UserBookController(UserBookService userBookService) {
         this.userBookService = userBookService;
     }
-    @GetMapping("/{userId}")
+    @GetMapping("/{userBookId}")
+    public UserBookDto getUserBooKById(@PathVariable Long userBookId) {
+        return UserBookDto.fromEntity(userBookService.getUserBookById(userBookId));
+    }
+    @GetMapping("/users/{userId}")
     public List<UserBookDto> getAllUserBooksByUserId(@PathVariable Long userId) {
         return userBookService.getAllBooksByUserId(userId).stream().map(UserBookDto::fromEntity).collect(Collectors.toList());
     }
@@ -38,16 +42,26 @@ public class UserBookController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserBookDto> addUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) throws JsonProcessingException {
         CustomUserDetails user = (CustomUserDetails) userDetails;
-        UserBook userBook = userBookService.addBook(
+        UserBook userBook = userBookService.addUserBook(
                 bookRequest.getIsbn(),
                 user.getId(),
                 bookRequest.getStatus(),
                 bookRequest.getLocation(),
                 bookRequest.getRating()
         );
-        log.info("wotk");
         UserBookDto userBookDto = UserBookDto.fromEntity(userBook);
             return new ResponseEntity<>(userBookDto, HttpStatus.CREATED);
+    }
+
+    @PutMapping()
+    public ResponseEntity<UserBookDto> updateUserBook(@RequestBody BookRequest bookRequest) {
+        return null;
+    }
+
+    @DeleteMapping("/{userBookId}")
+    @PreAuthorize("isAuthenticated()")
+    public void deleteUserBook(@PathVariable Long userBookId) {
+        userBookService.deleteUserBook(userBookId);
     }
 
 

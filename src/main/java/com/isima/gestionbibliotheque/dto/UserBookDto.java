@@ -1,10 +1,6 @@
 package com.isima.gestionbibliotheque.dto;
 
-import com.isima.gestionbibliotheque.model.Book;
-import com.isima.gestionbibliotheque.model.Tag;
-import com.isima.gestionbibliotheque.model.User;
-import com.isima.gestionbibliotheque.model.UserBook;
-import jakarta.persistence.*;
+import com.isima.gestionbibliotheque.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +20,8 @@ public class UserBookDto {
     private String status;
     private User user;
     private Book book;
-    private List<Tag> tag = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
+    private List<Collection> collections = new ArrayList<>();
 
     public static UserBook toEntity(UserBookDto userBookDto) {
         if (userBookDto == null) {
@@ -34,10 +31,11 @@ public class UserBookDto {
         userBook.setId(userBookDto.getId());
         userBook.setBook(userBookDto.getBook());
         userBook.setUser(userBookDto.getUser());
-        userBook.setTag(userBookDto.getTag());
+        userBook.setTags(userBookDto.getTags());
         userBook.setRating(userBookDto.getRating());
         userBook.setLocation(userBookDto.getLocation());
         userBook.setStatus(userBookDto.getStatus());
+        userBook.setCollections(userBookDto.getCollections());
 
         return userBook;
     }
@@ -49,10 +47,11 @@ public class UserBookDto {
                 .id(userBook.getId())
                 .book(userBook.getBook())
                 .user(userBook.getUser())
-                .tag(userBook.getTag())
+                .tags(userBook.getTags())
                 .rating(userBook.getRating())
                 .location(userBook.getLocation())
                 .status(userBook.getStatus())
+                .collections(userBook.getCollections())
                 .build();
     }
 }

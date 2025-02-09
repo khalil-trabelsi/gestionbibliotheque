@@ -27,7 +27,6 @@ public class BookDto {
     private Date createdAt;
     private List<Author> authors;
     private List<UserBook> userBooks = new ArrayList<>();
-    private List<Collection> collections = new ArrayList<>();
 
     public static BookDto fromEntity(Book book) {
         return book == null ? null :
@@ -43,7 +42,6 @@ public class BookDto {
                         .createdAt(book.getCreatedAt())
                         .authors(book.getAuthors())
                         .userBooks(book.getUserBooks())
-                        .collections(book.getCollections())
                         .build();
     }
 
@@ -60,7 +58,6 @@ public class BookDto {
         book.setPublishDate(bookDto.getPublishDate());
         book.setPublishers(bookDto.getPublishers());
         book.setDescription(bookDto.getDescription());
-        book.setCollections(bookDto.getCollections());
         book.setCreatedAt(bookDto.getCreatedAt());
         book.setCoverImageUrl(bookDto.getCoverImageUrl());
         book.setAuthors(bookDto.getAuthors());
