@@ -9,6 +9,10 @@ public class EntityNotFoundException extends RuntimeException {
         super(message);
     }
 
+    public EntityNotFoundException(String message, ErrorCode errorCode) {
+        super(message);
+        this.errorCode = errorCode;
+    }
     public EntityNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -17,4 +21,6 @@ public class EntityNotFoundException extends RuntimeException {
         super(message, cause);
         this.errorCode = errorCode;
     }
+
+
 }

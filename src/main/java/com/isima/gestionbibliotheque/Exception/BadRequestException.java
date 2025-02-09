@@ -2,12 +2,14 @@ package com.isima.gestionbibliotheque.Exception;
 
 import lombok.Getter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class BadRequestException extends RuntimeException {
     private ErrorCode errorCode;
-    private List<String> errors;
+    private Map<String, String> errors;
 
     public  BadRequestException(String message) {
         super(message);
@@ -26,7 +28,7 @@ public class BadRequestException extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
     }
-    public  BadRequestException(String message, ErrorCode errorCode, List<String> errors) {
+    public  BadRequestException(String message, ErrorCode errorCode, Map<String, String> errors) {
         super(message);
         this.errorCode = errorCode;
         this.errors = errors;
