@@ -1,6 +1,7 @@
 package com.isima.gestionbibliotheque.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +20,7 @@ public class Author {
     private String name;
     private String url;
     @ManyToMany(mappedBy = "authors")
-    @JsonBackReference
+    @JsonIgnore
     private List<Book> books = new ArrayList<>();
 
 }
