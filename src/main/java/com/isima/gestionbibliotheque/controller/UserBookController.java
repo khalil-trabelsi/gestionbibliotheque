@@ -40,9 +40,9 @@ public class UserBookController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserBookDto> addUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) throws JsonProcessingException {
+    public ResponseEntity<UserBookDto> createUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) throws JsonProcessingException {
         CustomUserDetails user = (CustomUserDetails) userDetails;
-        UserBook userBook = userBookService.addUserBook(
+        UserBook userBook = userBookService.createUserBook(
                 bookRequest.getIsbn(),
                 user.getId(),
                 bookRequest.getStatus(),

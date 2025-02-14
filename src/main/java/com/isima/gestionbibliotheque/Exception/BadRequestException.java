@@ -9,7 +9,7 @@ import java.util.Map;
 @Getter
 public class BadRequestException extends RuntimeException {
     private ErrorCode errorCode;
-    private Map<String, String> errors;
+    private List<String> errors;
 
     public  BadRequestException(String message) {
         super(message);
@@ -28,7 +28,7 @@ public class BadRequestException extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
     }
-    public  BadRequestException(String message, ErrorCode errorCode, Map<String, String> errors) {
+    public  BadRequestException(String message, ErrorCode errorCode, List<String> errors) {
         super(message);
         this.errorCode = errorCode;
         this.errors = errors;

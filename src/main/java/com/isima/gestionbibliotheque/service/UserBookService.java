@@ -8,7 +8,7 @@ import java.util.List;
 public interface UserBookService {
     public List<UserBook> getAllBooksByUserId(Long userId);
     public UserBook getUserBookById(Long userBookId);
-    public UserBook addUserBook(String isbn, Long userId, String status, String location, int rating) throws JsonProcessingException;
+    public UserBook createUserBook(String isbn, Long userId, String status, String location, int rating) throws JsonProcessingException;
     public void deleteUserBook(Long userBookId);
 
 }

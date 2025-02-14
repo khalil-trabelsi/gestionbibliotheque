@@ -33,11 +33,11 @@ public class AuthController {
 
     @PostMapping(path = "/register")
     public ResponseEntity<User> register(@Valid @RequestBody UserRegistrationDto user, BindingResult bindingResult) {
-        Map<String, String> errors = new HashMap<>();
+        List<String> errors = new ArrayList<>();
 
         if (bindingResult.hasErrors()) {
             for (FieldError error: bindingResult.getFieldErrors()) {
-                errors.put(error.getField(), error.getDefaultMessage());
+                errors.add(error.getDefaultMessage());
             }
             throw new BadRequestException("Invalid input data", ErrorCode.USER_BOOK_NOT_VALID,errors);
         }

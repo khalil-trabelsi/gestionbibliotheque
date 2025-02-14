@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
        this.passwordEncoder = passwordEncoder;
     }
     @Override
-    public User register(@Valid UserRegistrationDto userRegistrationDto) {
+    public User register(UserRegistrationDto userRegistrationDto) {
         User user = new User();
         user.setUsername(userRegistrationDto.getUsername());
         user.setUsername(userRegistrationDto.getUsername());
