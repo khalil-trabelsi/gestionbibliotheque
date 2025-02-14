@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.Exception;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
 import java.beans.Transient;
@@ -11,7 +12,7 @@ import java.util.Map;
 public record ErrorEntity(
         LocalDateTime timeStamp,
         String message,
-        Map<String, String> errors,
+        List<String> errors,
         @Transient
         String errorAuthor,
         int httpStatus,

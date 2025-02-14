@@ -16,7 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class UserBook {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +28,7 @@ public class UserBook {
     private Book book;
     @OneToMany(mappedBy = "userBook")
     private List<Tag> tags = new ArrayList<>();
-    @ManyToMany
+    @ManyToMany(mappedBy = "userBooks")
     @JsonIgnore
     private List<Collection> collections = new ArrayList<>();
 }

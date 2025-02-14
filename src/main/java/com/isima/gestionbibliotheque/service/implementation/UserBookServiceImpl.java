@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
+import com.isima.gestionbibliotheque.helpers.DateParser;
 import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.UserBookService;
@@ -30,6 +31,7 @@ public class UserBookServiceImpl implements UserBookService {
     private final PublisherRepository publisherRepository;
     private final TagRepository tagRepository;
     private static final String API_URL = "https://openlibrary.org/api/volumes/brief/isbn/%s.json";
+
 
     @Autowired
     public UserBookServiceImpl(
@@ -64,7 +66,7 @@ public class UserBookServiceImpl implements UserBookService {
 
     @Override
     @Transactional
-    public UserBook addUserBook(String isbn, Long userId, String status, String location, int rating) throws JsonProcessingException {
+    public UserBook createUserBook(String isbn, Long userId, String status, String location, int rating) throws JsonProcessingException {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find user with Id %d", userId))
         );
@@ -77,7 +79,7 @@ public class UserBookServiceImpl implements UserBookService {
             String url = String.format(API_URL, isbn);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
             String response = restTemplate.getForObject(url, String.class);
-            // Transform response To Json
+            // Transform response To Json format
             JsonNode rootNode = objectMapper.readTree(response);
             JsonNode recordsNode = rootNode.path("records");
             Iterator<String> fieldNames = recordsNode.fieldNames();
@@ -114,11 +116,13 @@ public class UserBookServiceImpl implements UserBookService {
                     existingBook.setPublishers(publishers);
                 }
 
-                existingBook.setPublishDate(LocalDate.parse(dataNode.get("publish_date").asText(), formatter));
+                existingBook.setPublishDate(DateParser.parseDate(dataNode.get("publish_date").asText()));
                 existingBook.setCreatedAt(new Date());
                 existingBook.setTitle(dataNode.get("title").asText());
                 existingBook.setIsbn(isbn);
-                existingBook.setSubtitle(dataNode.get("subtitle").asText());
+                if (dataNode.get("subtitle") != null) {
+                    existingBook.setSubtitle(dataNode.get("subtitle").asText());
+                }
                 existingBook = bookRepository.save(existingBook);
 
 
