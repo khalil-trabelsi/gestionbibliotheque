@@ -9,12 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
 @Slf4j
 public class JwtServiceImpl implements JwtService {
-    public static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    public static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
+            "mySuperSecretKeyForJWTSigning123456789012345".getBytes(StandardCharsets.UTF_8)
+    );
+//    public static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private static final long EXPIRATION_TIME = 86400000;
 
     public String generateToken(String username) {

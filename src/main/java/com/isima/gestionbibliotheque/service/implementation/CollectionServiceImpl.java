@@ -12,12 +12,15 @@ import com.isima.gestionbibliotheque.repository.UserBookRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.AccessKeyService;
 import com.isima.gestionbibliotheque.service.CollectionService;
+import com.isima.gestionbibliotheque.service.UserBookService;
 import jakarta.persistence.Access;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,21 +30,22 @@ import java.util.stream.Collectors;
 public class CollectionServiceImpl implements CollectionService {
 
     private final CollectionRepository collectionRepository;
-    private final UserBookRepository userBookRepository;
     private final UserRepository userRepository;
     private final AccessKeyService accessKeyService;
+
+    private final UserBookService userBookService;
 
     @Autowired
     public CollectionServiceImpl(
             CollectionRepository collectionRepository,
-            UserBookRepository userBookRepository,
             UserRepository userRepository,
-            AccessKeyService accessKeyService
+            AccessKeyService accessKeyService,
+            UserBookService userBookService
     ) {
         this.collectionRepository = collectionRepository;
-        this.userBookRepository = userBookRepository;
         this.userRepository = userRepository;
         this.accessKeyService = accessKeyService;
+        this.userBookService = userBookService;
     }
 
     @Override
@@ -83,23 +87,19 @@ public class CollectionServiceImpl implements CollectionService {
             }
         }
 
-        throw new RuntimeException("Access Denied");
+        throw new AccessDeniedException("You don't have permission to access this collection");
     }
 
     @Override
+    @Transactional
     public CollectionDto createCollection(CreateCollectionDto dto, String username) {
-        List<String> userBookErrors = new ArrayList<>();
-        List<UserBook> userBooks = new ArrayList<>();
 
         User user = userRepository.findUserByUsername(username);
-
-        validateUserBooks(dto, userBookErrors, userBooks);
         Collection collection = new Collection();
 
         collection.setName(dto.getName());
         collection.setDescription(dto.getDescription());
         collection.setUser(user);
-        collection.setUserBooks(userBooks);
         collection.setPublic(dto.isPublic());
 
         collection = collectionRepository.save(collection);
@@ -142,7 +142,7 @@ public class CollectionServiceImpl implements CollectionService {
             }
         }
 
-        throw new RuntimeException("Operation denied.");
+        throw new AccessDeniedException("You don't have permission to modify this collection.");
     }
     @Override
     public void deleteCollection(Long collectionId) {
@@ -154,27 +154,51 @@ public class CollectionServiceImpl implements CollectionService {
             if (authentication.getName().equals(collection.getUser().getUsername())) {
                 collectionRepository.deleteById(collectionId);
             } else {
-                throw new RuntimeException("Action denied");
+                throw new AccessDeniedException("You don't have permission to delete this collection");
             }
         }
     }
+
 
     private void validateUserBooks(CreateCollectionDto dto, List<String> userBookErrors, List<UserBook> userBooks) {
-        if (dto.getUserBookIds() != null) {
-            for (Long userBookId: dto.getUserBookIds()) {
-                Optional<UserBook> existingUserBook = userBookRepository.findById(userBookId);
-                log.info("user Book: "+existingUserBook.isEmpty());
-                if (existingUserBook.isEmpty()) {
-                    userBookErrors.add(String.format("Cannot find userBook with Id %d", userBookId));
-                } else {
-                    userBooks.add(existingUserBook.get());
+//        if (dto.getUserBookIds() != null) {
+//            for (Long userBookId: dto.getUserBookIds()) {
+//                Optional<UserBook> existingUserBook = userBookRepository.findById(userBookId);
+//                log.info("user Book: "+existingUserBook.isEmpty());
+//                if (existingUserBook.isEmpty()) {
+//                    userBookErrors.add(String.format("Cannot find userBook with Id %d", userBookId));
+//                } else {
+//                    userBooks.add(existingUserBook.get());
+//                }
+//            }
+//        }
+//        if (!userBookErrors.isEmpty()) {
+//            throw new BadRequestException("User book(s) not founds", ErrorCode.USER_BOOK_NOT_FOUND, userBookErrors);
+//        }
+    }
+
+    @Override
+    public CollectionDto addBookToCollection(Long collectionId, Long bookId) {
+        Collection collection = collectionRepository.findById(collectionId).orElseThrow(
+                () -> new EntityNotFoundException("cannot find collection")
+        );
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (collection.getUser().getUsername().equals(authentication.getName())) {
+                UserBook userBook = userBookService.createUserBook(bookId, authentication.getName());
+
+                if (!collection.getUserBooks().contains(userBook)) {
+                    collection.getUserBooks().add(userBook);
+                    collectionRepository.save(collection);
                 }
+
+                return CollectionDto.fromEntity(collection);
             }
         }
 
-        if (!userBookErrors.isEmpty()) {
-            throw new BadRequestException("User book(s) not founds", ErrorCode.USER_BOOK_NOT_FOUND, userBookErrors);
-        }
-    }
 
+        throw new AccessDeniedException("You don't have permission to modify this collection");
+
+    }
 }

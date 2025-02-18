@@ -1,11 +1,7 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
-import com.isima.gestionbibliotheque.helpers.DateParser;
 import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.UserBookService;
@@ -13,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -25,12 +18,7 @@ public class UserBookServiceImpl implements UserBookService {
     private final UserBookRepository userBookRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
-    private final AuthorRepository authorRepository;
-    private final PublisherRepository publisherRepository;
     private final TagRepository tagRepository;
-    private static final String API_URL = "https://openlibrary.org/api/volumes/brief/isbn/%s.json";
 
 
     @Autowired
@@ -38,19 +26,11 @@ public class UserBookServiceImpl implements UserBookService {
             UserBookRepository userBookRepository,
             BookRepository bookRepository,
             UserRepository userRepository,
-            RestTemplate restTemplate,
-            ObjectMapper objectMapper,
-            AuthorRepository authorRepository,
-            PublisherRepository publisherRepository,
             TagRepository tagRepository
             ) {
         this.userBookRepository = userBookRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
-        this.authorRepository = authorRepository;
-        this.publisherRepository = publisherRepository;
         this.tagRepository = tagRepository;
     }
     @Override
@@ -66,75 +46,21 @@ public class UserBookServiceImpl implements UserBookService {
 
     @Override
     @Transactional
-    public UserBook createUserBook(String isbn, Long userId, String status, String location, int rating) throws JsonProcessingException {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Cannot find user with Id %d", userId))
+    public UserBook createUserBook(Long bookId, String username) {
+        Book book = bookRepository.findById(bookId).orElseThrow(
+                () -> new EntityNotFoundException("Cannot find book with Id")
         );
-
-        Book existingBook = bookRepository.findBookByIsbn(isbn);
-
-        if (existingBook == null) {
-            existingBook = new Book();
-            // Fetch book details from Open Library api
-            String url = String.format(API_URL, isbn);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH);
-            String response = restTemplate.getForObject(url, String.class);
-            // Transform response To Json format
-            JsonNode rootNode = objectMapper.readTree(response);
-            JsonNode recordsNode = rootNode.path("records");
-            Iterator<String> fieldNames = recordsNode.fieldNames();
-
-            if (fieldNames.hasNext()) {
-                String firstKey = fieldNames.next();
-                JsonNode dataNode = recordsNode.path(firstKey).path("data");
-                JsonNode authorsNode = dataNode.get("authors");
-                JsonNode publishersNode = dataNode.get("publishers");
-
-                if (authorsNode != null && authorsNode.isArray()) {
-                    List<Author> authors = new ArrayList<>();
-                    for (JsonNode authorNode: authorsNode) {
-                        String authorName = authorNode.get("name").asText();
-                        String authorUrl = authorNode.get("url").asText();
-                        Author author = new Author();
-                        author.setName(authorName);
-                        author.setUrl(authorUrl);
-                        authorRepository.save(author);
-                        authors.add(author);
-                    }
-                    existingBook.setAuthors(authors);
-                }
-
-                if (publishersNode != null && publishersNode.isArray()) {
-                    List<Publisher> publishers = new ArrayList<>();
-                    for (JsonNode publisherNode: publishersNode) {
-                        String publisherName = publisherNode.get("name").asText();
-                        Publisher publisher = new Publisher();
-                        publisher.setName(publisherName);
-                        publisherRepository.save(publisher);
-                        publishers.add(publisher);
-                    }
-                    existingBook.setPublishers(publishers);
-                }
-
-                existingBook.setPublishDate(DateParser.parseDate(dataNode.get("publish_date").asText()));
-                existingBook.setCreatedAt(new Date());
-                existingBook.setTitle(dataNode.get("title").asText());
-                existingBook.setIsbn(isbn);
-                if (dataNode.get("subtitle") != null) {
-                    existingBook.setSubtitle(dataNode.get("subtitle").asText());
-                }
-                existingBook = bookRepository.save(existingBook);
-
-
-            }
+        User user = userRepository.findUserByUsername(username);
+        // if a link between a user and a book already exists then we will not create a new link
+        UserBook userBook  = userBookRepository.findByBookIdAndUserId(bookId, user.getId());
+        if (userBook != null) {
+            return userBook;
         }
 
-        UserBook userBook = new UserBook();
+        // otherwise create a new user book
+        userBook = new UserBook();
         userBook.setUser(user);
-        userBook.setRating(rating);
-        userBook.setLocation(location);
-        userBook.setStatus(status);
-        userBook.setBook(existingBook);
+        userBook.setBook(book);
 
         return userBookRepository.save(userBook);
     }
@@ -152,5 +78,6 @@ public class UserBookServiceImpl implements UserBookService {
 
         userBookRepository.delete(userBook);
     }
+
 
 }

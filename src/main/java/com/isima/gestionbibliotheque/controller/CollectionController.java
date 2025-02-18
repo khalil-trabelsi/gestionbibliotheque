@@ -3,10 +3,7 @@ package com.isima.gestionbibliotheque.controller;
 import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
 import com.isima.gestionbibliotheque.controller.api.CollectionApi;
-import com.isima.gestionbibliotheque.dto.CollectionDto;
-import com.isima.gestionbibliotheque.dto.CreateCollectionDto;
-import com.isima.gestionbibliotheque.dto.SharedCollectionRequestDto;
-import com.isima.gestionbibliotheque.dto.SharedCollectionResponseDto;
+import com.isima.gestionbibliotheque.dto.*;
 import com.isima.gestionbibliotheque.service.AccessKeyService;
 import com.isima.gestionbibliotheque.service.CollectionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -106,4 +103,11 @@ public class CollectionController implements CollectionApi {
         return ResponseEntity.ok(Map.of("success", "Collection deleted successfully"));
     }
 
+    @Override
+    public ResponseEntity<CollectionDto> addBookToCollection(
+            @RequestBody BookCollectionRequest bookCollectionRequest
+    ) {
+        CollectionDto collection = collectionService.addBookToCollection(bookCollectionRequest.getCollectionId(), bookCollectionRequest.getBookId());
+        return ResponseEntity.status(HttpStatus.CREATED.value()).body(collection);
+    }
 }

@@ -1,10 +1,7 @@
 package com.isima.gestionbibliotheque.controller.api;
 
 import com.isima.gestionbibliotheque.Exception.ErrorEntity;
-import com.isima.gestionbibliotheque.dto.CollectionDto;
-import com.isima.gestionbibliotheque.dto.CreateCollectionDto;
-import com.isima.gestionbibliotheque.dto.SharedCollectionRequestDto;
-import com.isima.gestionbibliotheque.dto.SharedCollectionResponseDto;
+import com.isima.gestionbibliotheque.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -252,5 +249,34 @@ public interface CollectionApi {
     )
     @DeleteMapping("/{collectionId}")
     ResponseEntity<Map<String, String>> deleteCollection(@PathVariable Long collectionId);
+
+
+    @Operation(
+            summary = "Add a book to a collection",
+            description = "Adds a book to the specified collection. If no link exists between the user and the book, a new link is created.",
+            responses = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Book successfully added to the collection.",
+                    content = @Content(schema = @Schema(implementation = CollectionDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden. You do not have permission to modify this collection.",
+                    content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Not Found. The specified collection ID or book ID does not exist.",
+                    content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error. An unexpected error occurred while adding the book to the collection.",
+                    content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+            )}
+    )
+    @PostMapping("/add_book_collection")
+    ResponseEntity<CollectionDto> addBookToCollection(@RequestBody BookCollectionRequest bookCollectionRequest);
 
 }

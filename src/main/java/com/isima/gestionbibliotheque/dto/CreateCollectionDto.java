@@ -19,5 +19,4 @@ public class CreateCollectionDto {
     private String description;
     @JsonProperty("isPublic")
     private boolean isPublic;
-    private List<Long> userBookIds;
 }

@@ -19,9 +19,11 @@ import java.util.List;
 public class Book {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String isbn;
     private String title;
     private String subtitle;
+    private String numberOfPages;
     private LocalDate publishDate;
     @ManyToMany
     private List<Publisher> publishers;
@@ -33,5 +35,8 @@ public class Book {
     @JsonIgnore
     @OneToMany(mappedBy = "book")
     private List<UserBook> userBooks = new ArrayList<>();
+
+    @OneToOne(mappedBy = "book")
+    private CoverImage coverImage;
 
 }
