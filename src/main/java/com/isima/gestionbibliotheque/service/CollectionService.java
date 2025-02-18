@@ -20,4 +20,6 @@ public interface CollectionService {
 
     CollectionDto getCollectionById(Long collectionId, String key);
 
+    CollectionDto addBookToCollection(Long collectionId, Long bookId);
+
 }

@@ -25,8 +25,10 @@ public class BookDto {
     private String description;
     private String coverImageUrl;
     private Date createdAt;
+    private String numberOfPages;
     private List<Author> authors;
     private List<UserBook> userBooks = new ArrayList<>();
+    private CoverImage coverImage;
 
     public static BookDto fromEntity(Book book) {
         return book == null ? null :
@@ -42,6 +44,8 @@ public class BookDto {
                         .createdAt(book.getCreatedAt())
                         .authors(book.getAuthors())
                         .userBooks(book.getUserBooks())
+                        .numberOfPages(book.getNumberOfPages())
+                        .coverImage(book.getCoverImage())
                         .build();
     }
 
@@ -62,6 +66,8 @@ public class BookDto {
         book.setCoverImageUrl(bookDto.getCoverImageUrl());
         book.setAuthors(bookDto.getAuthors());
         book.setUserBooks(bookDto.getUserBooks());
+        book.setCoverImage(bookDto.getCoverImage());
+        book.setNumberOfPages(bookDto.getNumberOfPages());
 
         return book;
 

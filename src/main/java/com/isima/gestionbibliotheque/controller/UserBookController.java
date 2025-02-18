@@ -1,7 +1,7 @@
 package com.isima.gestionbibliotheque.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.isima.gestionbibliotheque.dto.BookRequest;
+import com.isima.gestionbibliotheque.dto.UserBookRequest;
 import com.isima.gestionbibliotheque.dto.UserBookDto;
 import com.isima.gestionbibliotheque.model.CustomUserDetails;
 import com.isima.gestionbibliotheque.model.UserBook;
@@ -38,23 +38,11 @@ public class UserBookController {
         return userBookService.getAllBooksByUserId(userId).stream().map(UserBookDto::fromEntity).collect(Collectors.toList());
     }
 
-    @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserBookDto> createUserBook(@RequestBody BookRequest bookRequest, @AuthenticationPrincipal UserDetails userDetails) throws JsonProcessingException {
-        CustomUserDetails user = (CustomUserDetails) userDetails;
-        UserBook userBook = userBookService.createUserBook(
-                bookRequest.getIsbn(),
-                user.getId(),
-                bookRequest.getStatus(),
-                bookRequest.getLocation(),
-                bookRequest.getRating()
-        );
-        UserBookDto userBookDto = UserBookDto.fromEntity(userBook);
-            return new ResponseEntity<>(userBookDto, HttpStatus.CREATED);
-    }
+
+
 
     @PutMapping()
-    public ResponseEntity<UserBookDto> updateUserBook(@RequestBody BookRequest bookRequest) {
+    public ResponseEntity<UserBookDto> updateUserBook(@RequestBody UserBookRequest bookRequest) {
         return null;
     }
 
