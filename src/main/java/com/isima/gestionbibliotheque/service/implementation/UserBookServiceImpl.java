@@ -48,7 +48,7 @@ public class UserBookServiceImpl implements UserBookService {
     @Transactional
     public UserBook createUserBook(Long bookId, String username) {
         Book book = bookRepository.findById(bookId).orElseThrow(
-                () -> new EntityNotFoundException("Cannot find book with Id")
+                () -> new EntityNotFoundException(String.format("Cannot find book with Id %d", bookId))
         );
         User user = userRepository.findUserByUsername(username);
         // if a link between a user and a book already exists then we will not create a new link

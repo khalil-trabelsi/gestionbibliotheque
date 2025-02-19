@@ -21,7 +21,7 @@ public class JwtServiceImpl implements JwtService {
     );
 //    public static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private static final long ACCESS_TOKEN_EXPIRATION_TIME = 24*60*60*60;
-    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 24*60*60*60;
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 7*24*60*60*60;
 
 
     public String generateToken(String username) {
