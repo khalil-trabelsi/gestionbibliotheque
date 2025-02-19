@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @Slf4j
 @Tag(name = "Authentication")
 public class AuthController {
@@ -40,7 +40,7 @@ public class AuthController {
     @PostMapping(path = "/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegistrationDto request, BindingResult bindingResult) {
         List<String> errors = new ArrayList<>();
-
+        log.info("reg");
         if (bindingResult.hasErrors()) {
             for (FieldError error: bindingResult.getFieldErrors()) {
                 errors.add(error.getDefaultMessage());
@@ -61,10 +61,6 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         authenticationService.refreshToken(request, response);
-    }
-
-    public void logout() {
-
     }
 
 

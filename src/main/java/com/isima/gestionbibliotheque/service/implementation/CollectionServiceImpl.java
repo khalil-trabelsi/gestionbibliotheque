@@ -60,7 +60,21 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public List<CollectionDto> getAllCollectionsByUserId(Long userId) {
-        return collectionRepository.findAllByUserId(userId).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Cannot find user with id %d", userId))
+        );
+
+        List<Collection> collections = collectionRepository.findAllByUserId(userId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getName().equals(user.getUsername())) {
+                return collections.stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+            }
+        }
+
+        return collections.stream().filter(Collection::isPublic).map(CollectionDto::fromEntity).collect(Collectors.toList());
+
     }
 
     @Override
@@ -147,7 +161,7 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public void deleteCollection(Long collectionId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
-                () ->  new EntityNotFoundException("Cannot find collection")
+                () ->  new EntityNotFoundException(String.format("Cannot find collection %d", collectionId))
         );
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
