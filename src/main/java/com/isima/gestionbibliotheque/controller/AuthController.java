@@ -2,11 +2,17 @@ package com.isima.gestionbibliotheque.controller;
 
 import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
-import com.isima.gestionbibliotheque.dto.auth.AuthRequestDto;
-import com.isima.gestionbibliotheque.dto.auth.AuthResponseDto;
+import com.isima.gestionbibliotheque.dto.auth.AuthRequest;
+import com.isima.gestionbibliotheque.dto.auth.AuthResponse;
 import com.isima.gestionbibliotheque.dto.auth.UserRegistrationDto;
+import com.isima.gestionbibliotheque.model.Token;
 import com.isima.gestionbibliotheque.model.User;
+import com.isima.gestionbibliotheque.repository.TokenRepository;
+import com.isima.gestionbibliotheque.service.AuthenticationService;
 import com.isima.gestionbibliotheque.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,40 +22,53 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 @Slf4j
+@Tag(name = "Authentication")
 public class AuthController {
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
     @Autowired
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping(path = "/register")
-    public ResponseEntity<User> register(@Valid @RequestBody UserRegistrationDto user, BindingResult bindingResult) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegistrationDto request, BindingResult bindingResult) {
         List<String> errors = new ArrayList<>();
 
         if (bindingResult.hasErrors()) {
             for (FieldError error: bindingResult.getFieldErrors()) {
                 errors.add(error.getDefaultMessage());
             }
-            throw new BadRequestException("Invalid input data", ErrorCode.USER_BOOK_NOT_VALID,errors);
+            throw new BadRequestException("Invalid input data", null,errors);
         }
-        User createdUser = this.userService.register(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        AuthResponse response = this.authenticationService.register(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping(path="/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto authRequestDto) {
-        String accessToken = this.userService.login(authRequestDto);
-        return ResponseEntity.ok(new AuthResponseDto(accessToken));
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
+        return ResponseEntity.ok(this.authenticationService.login(authRequest));
     }
+
+    @PostMapping(path="/refresh-token")
+    public void refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        authenticationService.refreshToken(request, response);
+    }
+
+    public void logout() {
+
+    }
+
+
+
 }
 
 

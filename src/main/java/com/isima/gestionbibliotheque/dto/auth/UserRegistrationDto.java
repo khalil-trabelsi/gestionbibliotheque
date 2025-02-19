@@ -24,7 +24,8 @@ public class UserRegistrationDto {
     private String email;
 
     @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")    private String password;
+    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    private String password;
     private LocalDate birthDate;
 
 }
