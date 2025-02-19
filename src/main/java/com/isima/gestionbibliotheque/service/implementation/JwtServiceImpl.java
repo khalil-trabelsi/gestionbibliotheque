@@ -5,6 +5,7 @@ import com.isima.gestionbibliotheque.service.JwtService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +20,33 @@ public class JwtServiceImpl implements JwtService {
             "mySuperSecretKeyForJWTSigning123456789012345".getBytes(StandardCharsets.UTF_8)
     );
 //    public static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private static final long EXPIRATION_TIME = 86400000;
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 24*60*60*60;
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 24*60*60*60;
+
 
     public String generateToken(String username) {
-        log.info("key: "+SECRET_KEY);
+        return buildToken(username, ACCESS_TOKEN_EXPIRATION_TIME);
+    }
+
+
+    public String generateRefreshToken(String username) {
+        return buildToken(username, REFRESH_TOKEN_EXPIRATION_TIME);
+    }
+
+    private String buildToken(
+          String username,
+          long expiration
+    ) {
         return Jwts
                 .builder()
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SECRET_KEY)
                 .compact();
     }
+
+
 
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
@@ -42,7 +58,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     public boolean isTokenValid(String token, String username) {
-        String extractedUsername = extractUsername(token);
+        final String extractedUsername = extractUsername(token);
         return username.equals(extractedUsername) && !isTokenExpired(token);
     }
 

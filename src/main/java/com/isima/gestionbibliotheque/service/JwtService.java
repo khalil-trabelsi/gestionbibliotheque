@@ -1,8 +1,8 @@
 package com.isima.gestionbibliotheque.service;
 
 public interface JwtService {
-    public String generateToken(String username);
-    public boolean isTokenValid(String token, String username);
-
-    public String extractUsername(String token);
+    String generateToken(String username);
+    String generateRefreshToken(String username);
+    boolean isTokenValid(String token, String username);
+    String extractUsername(String token);
 }
