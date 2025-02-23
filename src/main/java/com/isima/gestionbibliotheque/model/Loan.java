@@ -1,14 +1,13 @@
 package com.isima.gestionbibliotheque.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 
-/**
- * To do: Add Loan Entity
- * */
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -20,25 +19,24 @@ public class Loan {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private User emprunteur;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User borrower;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Book book;
+    @ManyToOne
+    private UserBook userBook;
 
     @Column(nullable = false)
-    private LocalDate loanDate;
+    private LocalDate borrowedAt;
 
-    @Column(nullable = false)
-    private LocalDate dueDate;
+    private LocalDate returnedAt;
 
-    private LocalDate returnDate;
 
-    @Enumerated(EnumType.STRING)
-    private LoanStatus status;
+    private LocalDate expectedReturnDate;
+
+    private boolean returned;
+
+    @PrePersist
+    protected void onCreate() {
+        borrowedAt = LocalDate.now();
+    }
 }

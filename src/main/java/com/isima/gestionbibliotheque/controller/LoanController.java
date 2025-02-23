@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.controller;
 
+import com.isima.gestionbibliotheque.dto.BorrowBookRequest;
 import com.isima.gestionbibliotheque.dto.LoanDto;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.repository.UserRepository;
@@ -9,11 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/loan")
@@ -30,51 +33,35 @@ public class LoanController {
     }
 
     @PostMapping
-    public ResponseEntity<LoanDto> empruntBook(@RequestBody LoanDto loanDto) {
-        return ResponseEntity.ok(loanService.addLoan(loanDto));
+    public ResponseEntity<LoanDto> borrowBook(@RequestBody BorrowBookRequest borrowBookRequest) {
+        return ResponseEntity.ok(loanService.borrowBook(borrowBookRequest));
     }
 
-    @PutMapping("/{id}/return")
-    public ResponseEntity<LoanDto> returnBook(@PathVariable Long id) {
-        return ResponseEntity.ok(loanService.returnLoan(id));
+    @PutMapping("/{loanId}/return_book")
+    public ResponseEntity<LoanDto> returnBook(@PathVariable Long loanId) {
+        return ResponseEntity.ok(loanService.returnBorrowedBook(loanId));
     }
 
-    @GetMapping("/emprunteur")
-    public ResponseEntity<List<LoanDto>> getEmprunteurLoans() {
-        // Récupérer l'utilisateur actuellement authentifié
+    @GetMapping("/{borrowerId}")
+    public ResponseEntity<List<LoanDto>> getBorrowerLoans(@PathVariable Long borrowerId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();  // Nom d'utilisateur
 
-        // Trouver l'utilisateur à partir du nom d'utilisateur
-        User user = userRepository.findUserByUsername(username);
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
 
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            User user = userRepository.findUserByUsername(username);
+
+            if (!Objects.equals(user.getId(), borrowerId)) {
+                throw new AccessDeniedException("You don't have permissions to access this resource");
+            }
+
+            List<LoanDto> loans = loanService.getBorrowedBooksByUserId(user.getId());
+
+            return ResponseEntity.ok(loans);
         }
 
-        // Récupérer les emprunts de cet utilisateur
-        Long emprunteurId = user.getId();
-        List<LoanDto> loans = loanService.getEmprunteurLoans(emprunteurId);
+        throw new AccessDeniedException("");
 
-        return ResponseEntity.ok(loans);
-
-    }
-
-    @GetMapping("/user")
-    public ResponseEntity<List<LoanDto>> getUserLoans() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        User user = userRepository.findUserByUsername(username);
-
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        Long userId = user.getId();
-        List<LoanDto> loans = loanService.getUserLoans(userId);
-
-        return ResponseEntity.ok(loans);
     }
 
 

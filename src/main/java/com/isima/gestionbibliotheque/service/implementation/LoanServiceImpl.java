@@ -1,15 +1,19 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
+import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
+import com.isima.gestionbibliotheque.Exception.OperationNotPermittedException;
+import com.isima.gestionbibliotheque.dto.BorrowBookRequest;
 import com.isima.gestionbibliotheque.dto.LoanDto;
-import com.isima.gestionbibliotheque.model.Book;
-import com.isima.gestionbibliotheque.model.Loan;
-import com.isima.gestionbibliotheque.model.LoanStatus;
-import com.isima.gestionbibliotheque.model.User;
+import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.LoanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,61 +25,84 @@ public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository loanRepository;
     private final UserRepository userRepository;
-    private final BookRepository bookRepository;
+    private final UserBookRepository userBookRepository;
 
     @Autowired
     public LoanServiceImpl(
-            BookRepository bookRepository,
             UserRepository userRepository,
-            LoanRepository loanRepository
+            LoanRepository loanRepository,
+            UserBookRepository userBookRepository
     ) {
-        this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.loanRepository = loanRepository;
+        this.userBookRepository = userBookRepository;
     }
 
     @Override
-    public LoanDto addLoan(LoanDto loanDto) {
-        User emprunteur = userRepository.findById(loanDto.getEmprunteurId())
-                .orElseThrow(() -> new RuntimeException("Emprunteur not found"));
-        User owner = userRepository.findById(loanDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Book book = bookRepository.findById(loanDto.getBookId())
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+    @Transactional
+    public LoanDto borrowBook(BorrowBookRequest borrowBookRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Loan loan = Loan.builder()
-                .emprunteur(emprunteur)
-                .user(owner)
-                .book(book)
-                .loanDate(LocalDate.now())
-                .dueDate(LocalDate.now().plusWeeks(2))
-                .status(LoanStatus.EN_COURS)
-                .build();
+        if (authentication != null && authentication.isAuthenticated()) {
+            UserBook userBook = userBookRepository.findById(borrowBookRequest.getUserBookId())
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("User Book %d not found ", borrowBookRequest.getUserBookId())));
+            User user = userRepository.findUserByUsername(authentication.getName());
+            if (userBook.getUser().getUsername().equals(user.getUsername())) {
+                throw new OperationNotPermittedException("You cannot borrow your own book");
+            }
+
+            if (userBook.getStatus().equals(BookStatus.BORROWED)) {
+                throw new OperationNotPermittedException("The requested book is already borrowed");
+            }
+
+
+
+            Loan loan = Loan.builder()
+                    .borrower(user)
+                    .userBook(userBook)
+                    .expectedReturnDate(LocalDate.now().plusWeeks(2))
+                    .returned(false)
+                    .build();
+
+            userBook.setStatus(BookStatus.BORROWED);
+            userBookRepository.save(userBook);
+
+            return LoanDto.fromEntity(loanRepository.save(loan));
+        }
+
+
+
+        throw new AccessDeniedException("Access denied");
+
+    }
+
+    @Override
+    public LoanDto returnBorrowedBook(Long loanId) {
+
+        Loan loan = loanRepository.findById(loanId).orElseThrow(
+                () -> new OperationNotPermittedException("You did not borrow this book")
+        );
+
+        if (loan.isReturned()) {
+            throw new OperationNotPermittedException("Book is already returned");
+        }
+
+        loan.setReturnedAt(LocalDate.now());
+        loan.setReturned(true);
 
         return LoanDto.fromEntity(loanRepository.save(loan));
     }
 
     @Override
-    public LoanDto returnLoan(Long loanId) {
-        Loan loan = loanRepository.findById(loanId)
-                .orElseThrow(() -> new RuntimeException("loan record not found"));
-
-        loan.setReturnDate(LocalDate.now());
-        loan.setStatus(LoanStatus.RETOURNE);
-
-        return LoanDto.fromEntity(loanRepository.save(loan));
-    }
-
-    @Override
-    public List<LoanDto> getEmprunteurLoans(Long emprunteurId) {
-        return loanRepository.findByEmprunteur_Id(emprunteurId).stream()
+    public List<LoanDto> getBorrowedBooksByUserId(Long borrowerId) {
+        return loanRepository.findByBorrowerId(borrowerId).stream()
                 .map(LoanDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<LoanDto> getUserLoans(Long id) {
-        return loanRepository.findByUserId(id).stream()
+        return loanRepository.findByBorrowerId(id).stream()
                 .map(LoanDto::fromEntity)
                 .collect(Collectors.toList());
     }

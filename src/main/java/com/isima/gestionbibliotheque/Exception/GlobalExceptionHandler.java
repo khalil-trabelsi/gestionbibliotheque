@@ -43,6 +43,16 @@
             return ResponseEntity.status(HttpStatus.FORBIDDEN.value()).body(error);
         }
 
+        @ExceptionHandler(OperationNotPermittedException.class)
+        public ResponseEntity<ErrorEntity> operationNotPermittedHandler(OperationNotPermittedException exception) {
+            ErrorEntity error = ErrorEntity.builder()
+                    .timeStamp(LocalDateTime.now())
+                    .message("Invalid operation: "+exception.getMessage())
+                    .httpStatus(HttpStatus.BAD_REQUEST.value())
+                    .build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(error);
+        }
+
         @ExceptionHandler(RuntimeException.class)
         public ResponseEntity<ErrorEntity> runtimeExceptionHandler(RuntimeException exception) {
             ErrorEntity error = ErrorEntity.builder()
