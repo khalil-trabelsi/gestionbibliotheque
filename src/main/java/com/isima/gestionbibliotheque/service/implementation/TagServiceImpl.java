@@ -9,6 +9,7 @@ import com.isima.gestionbibliotheque.repository.TagRepository;
 import com.isima.gestionbibliotheque.repository.UserBookRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.TagsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,10 @@ public class TagServiceImpl implements TagsService {
     private final UserRepository userRepository;
     private final UserBookRepository userBookRepository;
 
-    public TagServiceImpl(TagRepository tagRepository, UserRepository userRepository, UserBookRepository userBookRepository) {
+    @Autowired
+    public TagServiceImpl(TagRepository tagRepository,
+                          UserRepository userRepository,
+                          UserBookRepository userBookRepository) {
         this.tagRepository = tagRepository;
         this.userRepository = userRepository;
         this.userBookRepository = userBookRepository;
