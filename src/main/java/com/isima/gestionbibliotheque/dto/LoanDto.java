@@ -1,7 +1,8 @@
 package com.isima.gestionbibliotheque.dto;
 
 import com.isima.gestionbibliotheque.model.Loan;
-import com.isima.gestionbibliotheque.model.LoanStatus;
+import com.isima.gestionbibliotheque.model.User;
+import com.isima.gestionbibliotheque.model.UserBook;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -12,24 +13,22 @@ import java.time.LocalDate;
 @Builder
 public class LoanDto {
     private Long id;
-    private Long emprunteurId;
-    private Long userId;
-    private Long bookId;
-    private LocalDate loanDate;
-    private LocalDate dueDate;
-    private LocalDate returnDate;
-    private LoanStatus status;
+    private User borrower;
+    private UserBook userBook;
+    private LocalDate borrowedAt;
+    private LocalDate returnedAt;
+    private LocalDate expectedReturnDate;
+    private boolean returned;
 
     public static LoanDto fromEntity(Loan loan) {
         return LoanDto.builder()
                 .id(loan.getId())
-                .emprunteurId(loan.getEmprunteur().getId())
-                .userId(loan.getUser().getId())
-                .bookId(loan.getBook().getId())
-                .loanDate(loan.getLoanDate())
-                .dueDate(loan.getDueDate())
-                .returnDate(loan.getReturnDate())
-                .status(loan.getStatus())
+                .borrower(loan.getBorrower())
+                .userBook(loan.getUserBook())
+                .borrowedAt(loan.getBorrowedAt())
+                .returnedAt(loan.getReturnedAt())
+                .expectedReturnDate(loan.getExpectedReturnDate())
+                .returned(loan.isReturned())
                 .build();
     }
 }

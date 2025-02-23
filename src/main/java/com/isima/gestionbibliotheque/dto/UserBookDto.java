@@ -17,7 +17,7 @@ public class UserBookDto {
     private Long id;
     private String location;
     private int rating;
-    private String status;
+    private BookStatus status;
     private User user;
     private Book book;
     private List<Tag> tags = new ArrayList<>();

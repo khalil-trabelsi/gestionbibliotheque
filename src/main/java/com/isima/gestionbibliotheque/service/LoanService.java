@@ -1,13 +1,14 @@
 package com.isima.gestionbibliotheque.service;
 
+import com.isima.gestionbibliotheque.dto.BorrowBookRequest;
 import com.isima.gestionbibliotheque.dto.LoanDto;
 
 import java.util.List;
 
 public interface LoanService {
-    LoanDto addLoan(LoanDto loan);
-    LoanDto returnLoan(Long loanId);
-    List<LoanDto> getEmprunteurLoans(Long emprunteurId);
+    LoanDto borrowBook(BorrowBookRequest borrowBookRequest);
+    LoanDto returnBorrowedBook(Long loanId);
+    List<LoanDto> getBorrowedBooksByUserId(Long borrowerId);
     List<LoanDto> getUserLoans(Long id);
 
 }

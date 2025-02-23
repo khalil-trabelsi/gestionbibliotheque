@@ -61,6 +61,7 @@ public class UserBookServiceImpl implements UserBookService {
         userBook = new UserBook();
         userBook.setUser(user);
         userBook.setBook(book);
+        userBook.setStatus(BookStatus.AVAILABLE);
 
         return userBookRepository.save(userBook);
     }
