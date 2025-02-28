@@ -40,7 +40,6 @@ public class AuthController {
     @PostMapping(path = "/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegistrationDto request, BindingResult bindingResult) {
         List<String> errors = new ArrayList<>();
-        log.info("reg");
         if (bindingResult.hasErrors()) {
             for (FieldError error: bindingResult.getFieldErrors()) {
                 errors.add(error.getDefaultMessage());

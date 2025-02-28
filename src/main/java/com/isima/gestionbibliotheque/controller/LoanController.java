@@ -1,11 +1,13 @@
 package com.isima.gestionbibliotheque.controller;
 
+import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.dto.BorrowBookRequest;
 import com.isima.gestionbibliotheque.dto.LoanDto;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.LoanService;
 import com.isima.gestionbibliotheque.service.UserService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,8 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,17 +28,23 @@ import java.util.Objects;
 @Slf4j
 public class LoanController {
     private final LoanService loanService;
-    private final UserRepository userRepository;
     @Autowired
-    public LoanController(
-            LoanService loanService, UserRepository userRepository
-    ) {
+    public LoanController(LoanService loanService) {
         this.loanService = loanService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping
-    public ResponseEntity<LoanDto> borrowBook(@RequestBody BorrowBookRequest borrowBookRequest) {
+    public ResponseEntity<LoanDto> borrowBook(
+            @Valid @RequestBody BorrowBookRequest borrowBookRequest,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errors = new ArrayList<>();
+            for (FieldError error: bindingResult.getFieldErrors()) {
+                errors.add(String.format("%s: %s", error.getField(), error.getDefaultMessage()));
+            }
+            throw new BadRequestException("Invalid input data", null, errors);
+        }
         return ResponseEntity.ok(loanService.borrowBook(borrowBookRequest));
     }
 
@@ -42,27 +53,18 @@ public class LoanController {
         return ResponseEntity.ok(loanService.returnBorrowedBook(loanId));
     }
 
-    @GetMapping("/{borrowerId}")
-    public ResponseEntity<List<LoanDto>> getBorrowerLoans(@PathVariable Long borrowerId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepository.findUserByUsername(username);
-
-            if (!Objects.equals(user.getId(), borrowerId)) {
-                throw new AccessDeniedException("You don't have permissions to access this resource");
-            }
-
-            List<LoanDto> loans = loanService.getBorrowedBooksByUserId(user.getId());
-
-            return ResponseEntity.ok(loans);
-        }
-
-        throw new AccessDeniedException("");
-
+    @GetMapping("/transaction_history/users/{borrowerId}/borrowed_books")
+    public ResponseEntity<List<LoanDto>> getAllBorrowedBooks(@PathVariable Long borrowerId) {
+        return ResponseEntity.ok(loanService.getAllBorrowedBooks(borrowerId));
     }
+
+    @GetMapping("/transaction_history/users/{borrowerId}/returned_books")
+    public ResponseEntity<List<LoanDto>> getAllReturnedBooks(@PathVariable Long borrowerId) {
+        return ResponseEntity.ok(loanService.getAllReturnedBooks(borrowerId));
+    }
+
+
 
 
 }

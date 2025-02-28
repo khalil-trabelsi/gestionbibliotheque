@@ -20,9 +20,12 @@ public class Loan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User borrower;
 
     @ManyToOne
+    @JoinColumn( nullable = false)
+    @JsonIgnore
     private UserBook userBook;
 
     @Column(nullable = false)
