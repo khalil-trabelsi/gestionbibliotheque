@@ -1,11 +1,11 @@
 package com.isima.gestionbibliotheque.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +13,10 @@ import java.time.LocalDate;
 @Builder
 public class BorrowBookRequest {
 
+    @NotNull
     private Long userBookId;
-    private LocalDate expectedReturnDate;
+
+    @NotNull
+    private Integer loanDurationInDays;
 
 }

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +61,7 @@ public class LoanServiceImpl implements LoanService {
             Loan loan = Loan.builder()
                     .borrower(user)
                     .userBook(userBook)
-                    .expectedReturnDate(LocalDate.now().plusWeeks(2))
+                    .expectedReturnDate(LocalDate.now().plusDays(borrowBookRequest.getLoanDurationInDays()))
                     .returned(false)
                     .build();
 
@@ -78,7 +79,6 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public LoanDto returnBorrowedBook(Long loanId) {
-
         Loan loan = loanRepository.findById(loanId).orElseThrow(
                 () -> new OperationNotPermittedException("You did not borrow this book")
         );
@@ -90,8 +90,16 @@ public class LoanServiceImpl implements LoanService {
         loan.setReturnedAt(LocalDate.now());
         loan.setReturned(true);
 
+        userBookRepository.findById(loan.getUserBook().getId()).ifPresent(
+                (book) -> {
+                    book.setStatus(BookStatus.AVAILABLE);
+                    userBookRepository.save(book);
+                }
+        );
+
         return LoanDto.fromEntity(loanRepository.save(loan));
     }
+
 
     @Override
     public List<LoanDto> getBorrowedBooksByUserId(Long borrowerId) {
@@ -105,5 +113,35 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.findByBorrowerId(id).stream()
                 .map(LoanDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<LoanDto> getAllReturnedBooks(Long borrowerId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            var user = userRepository.findUserByUsername(authentication.getName());
+            if (!user.getId().equals(borrowerId) ) {
+                throw new AccessDeniedException("You don't have permissions to access this resource");
+            }
+            return loanRepository.findAllReturnedBooks(user.getId()).stream().map(LoanDto::fromEntity).toList();
+        }
+
+        throw new AccessDeniedException("Forbidden");
+    }
+
+    @Override
+    public List<LoanDto> getAllBorrowedBooks(Long borrowerId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            var user = userRepository.findUserByUsername(authentication.getName());
+            if (!user.getId().equals(borrowerId) ) {
+                throw new AccessDeniedException("You don't have permissions to access this resource");
+            }
+            return loanRepository.findAllBorrowedBooks(user.getId()).stream().map(LoanDto::fromEntity).toList();
+        }
+
+        throw new AccessDeniedException("Forbidden");
     }
 }
