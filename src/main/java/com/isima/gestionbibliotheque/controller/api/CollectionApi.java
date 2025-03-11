@@ -3,6 +3,7 @@ package com.isima.gestionbibliotheque.controller.api;
 import com.isima.gestionbibliotheque.Exception.ErrorEntity;
 import com.isima.gestionbibliotheque.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,7 +46,9 @@ public interface CollectionApi {
             description = "Returns a collection",
             responses = {
                     @ApiResponse(
-                            responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = CollectionDto.class))
+                            responseCode = "200", description = "Success", content = @Content(
+                                   array = @ArraySchema(schema = @Schema(implementation = CollectionDto.class))
+                    )
                     ),
                     @ApiResponse(
                             responseCode = "403", description = "Access Denied. The user does not have permission to access this collection.",
@@ -139,7 +142,6 @@ public interface CollectionApi {
             }
     )
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
     ResponseEntity<CollectionDto> createCollection(
             @Valid @RequestBody CreateCollectionDto dto,
             BindingResult bindingResult,
@@ -147,7 +149,6 @@ public interface CollectionApi {
     );
 
     @PostMapping("/share")
-    @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Share a collection",
             description = "Generates an access key to share a collection with specific permissions.Returns a response containing the generated access key and sharing details..",

@@ -16,7 +16,8 @@ import java.util.List;
 public class UserBookDto {
     private Long id;
     private String location;
-    private int rating;
+    private double rating;
+    private String comment;
     private BookStatus status;
     private User user;
     private Book book;
@@ -30,6 +31,7 @@ public class UserBookDto {
         UserBook userBook = new UserBook();
         userBook.setId(userBookDto.getId());
         userBook.setBook(userBookDto.getBook());
+        userBook.setComment(userBookDto.getComment());
         userBook.setUser(userBookDto.getUser());
         userBook.setTags(userBookDto.getTags());
         userBook.setRating(userBookDto.getRating());
@@ -51,6 +53,7 @@ public class UserBookDto {
                 .rating(userBook.getRating())
                 .location(userBook.getLocation())
                 .status(userBook.getStatus())
+                .comment(userBook.getComment())
                 .collections(userBook.getCollections())
                 .build();
     }

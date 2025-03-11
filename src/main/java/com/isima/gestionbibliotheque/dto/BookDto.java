@@ -29,6 +29,8 @@ public class BookDto {
     private List<Author> authors;
     private List<UserBook> userBooks = new ArrayList<>();
     private CoverImage coverImage;
+    private List<BookFeedback> bookFeedbacks = new ArrayList<>();
+    private double rating;
 
     public static BookDto fromEntity(Book book) {
         return book == null ? null :
@@ -46,6 +48,8 @@ public class BookDto {
                         .userBooks(book.getUserBooks())
                         .numberOfPages(book.getNumberOfPages())
                         .coverImage(book.getCoverImage())
+                        .bookFeedbacks(book.getBookFeedback())
+                        .rating(book.getRate())
                         .build();
     }
 

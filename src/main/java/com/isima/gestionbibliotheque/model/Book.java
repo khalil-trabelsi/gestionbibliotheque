@@ -39,4 +39,21 @@ public class Book {
     @OneToOne(mappedBy = "book")
     private CoverImage coverImage;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookFeedback> bookFeedback;
+
+
+    @Transient
+    public double getRate() {
+        if (bookFeedback == null || bookFeedback.isEmpty()) {
+            return 0.0;
+        }
+
+        var rating = this.bookFeedback.stream().mapToDouble(BookFeedback::getRating).average().orElse(0.0);
+
+        return Math.round(rating * 10.0) / 10.0;
+    }
+
+
 }

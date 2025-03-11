@@ -23,7 +23,9 @@ public class UserBook {
 
     private String location;
 
-    private int rating;
+    private double rating;
+
+    private String comment;
 
     @Enumerated(EnumType.STRING)
     private BookStatus status;

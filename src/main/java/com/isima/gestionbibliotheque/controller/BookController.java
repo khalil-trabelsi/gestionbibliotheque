@@ -6,6 +6,7 @@ import com.isima.gestionbibliotheque.service.BookService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -24,6 +25,11 @@ public class BookController {
     @GetMapping
     public ResponseEntity<List<BookDto>> getAllBooks() {
          return ResponseEntity.ok(bookService.getAllBooks());
+    }
+
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookDto> getBookById(@PathVariable Long bookId) {
+        return ResponseEntity.ok(bookService.getBookById(bookId));
     }
 
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.dto.BookDto;
+import com.isima.gestionbibliotheque.dto.FeedbackRequest;
 import com.isima.gestionbibliotheque.dto.OpenLibrarySearchResponse;
 import com.isima.gestionbibliotheque.helpers.DateParser;
 import com.isima.gestionbibliotheque.model.Author;
@@ -15,6 +16,7 @@ import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -101,6 +103,14 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findAll().stream().map(BookDto::fromEntity).toList();
     }
 
+    @Override
+    public BookDto getBookById(Long bookId) {
+        Book book = bookRepository.findById(bookId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Cannot find book with ID %d", bookId))
+        );
+        return BookDto.fromEntity(book);
+    }
+
     public Book saveBook(String bookDetailsResponse, String isbn) throws JsonProcessingException {
         Book book = new Book();
 
@@ -169,6 +179,7 @@ public class BookServiceImpl implements BookService {
         }
         return bookRepository.save(book);
     }
+
 
 
 

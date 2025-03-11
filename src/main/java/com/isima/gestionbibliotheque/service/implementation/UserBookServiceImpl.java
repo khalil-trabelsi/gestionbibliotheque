@@ -2,6 +2,7 @@ package com.isima.gestionbibliotheque.service.implementation;
 
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
+import com.isima.gestionbibliotheque.dto.FeedbackRequest;
 import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.UserBookService;
@@ -79,6 +80,8 @@ public class UserBookServiceImpl implements UserBookService {
 
         userBookRepository.delete(userBook);
     }
+
+
 
 
 }
