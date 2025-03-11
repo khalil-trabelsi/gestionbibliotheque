@@ -30,9 +30,9 @@ public class User {
     private Date createdAt;
     private LocalDate birthDate;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "user")
     @Column(name = "user_book")
+    @JsonBackReference
     private List<UserBook> userBooks = new ArrayList<>();
 
     @JsonIgnore

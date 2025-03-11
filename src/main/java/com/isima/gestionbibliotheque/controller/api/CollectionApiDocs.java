@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @Tag(name = "Collections", description = "Endpoints to manage collections")
 @RequestMapping("/api/collections")
-public interface CollectionApi {
+public interface CollectionApiDocs {
 
     @Operation(
             summary = "Retrieve the list of collections",

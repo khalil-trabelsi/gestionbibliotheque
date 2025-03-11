@@ -1,6 +1,6 @@
 package com.isima.gestionbibliotheque.controller;
 
-import com.isima.gestionbibliotheque.controller.api.BookFeedbackApi;
+import com.isima.gestionbibliotheque.controller.api.BookFeedbackApiDocs;
 import com.isima.gestionbibliotheque.dto.BookFeedbackDto;
 
 import com.isima.gestionbibliotheque.dto.FeedbackRequest;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class BookFeedbackController implements BookFeedbackApi {
+public class BookFeedbackControllerDocs implements BookFeedbackApiDocs {
 
     private final BookFeedbackService bookFeedbackService;
 
