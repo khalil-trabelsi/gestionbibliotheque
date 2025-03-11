@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "Book Feedback", description = "Endpoints to manage book feedbacks")
 @RequestMapping("/api/bookFeedback")
-public interface BookFeedbackApi {
+public interface BookFeedbackApiDocs {
 
     @Operation(
             summary = "Retrieve book's feedbacks for a given book ID",

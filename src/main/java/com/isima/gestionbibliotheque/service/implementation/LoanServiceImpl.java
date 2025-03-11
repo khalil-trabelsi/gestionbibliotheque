@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -102,17 +101,17 @@ public class LoanServiceImpl implements LoanService {
 
 
     @Override
-    public List<LoanDto> getBorrowedBooksByUserId(Long borrowerId) {
-        return loanRepository.findByBorrowerId(borrowerId).stream()
-                .map(LoanDto::fromEntity)
-                .collect(Collectors.toList());
-    }
+    public List<LoanDto> getBookLoanHistoryByBorrowerId(Long borrowerId) {
 
-    @Override
-    public List<LoanDto> getUserLoans(Long id) {
-        return loanRepository.findByBorrowerId(id).stream()
-                .map(LoanDto::fromEntity)
-                .collect(Collectors.toList());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = userRepository.findUserByUsername(authentication.getName());
+        if (!Objects.equals(currentUser.getId(), borrowerId)) {
+            throw new AccessDeniedException("You don't have permissions to access this resource");
+        }
+
+        List<Loan> loans = loanRepository.findAllByBorrowerId(borrowerId);
+
+        return loans.stream().map(LoanDto::fromEntity).toList();
     }
 
     @Override
@@ -144,4 +143,20 @@ public class LoanServiceImpl implements LoanService {
 
         throw new AccessDeniedException("Forbidden");
     }
+
+    @Override
+    public List<LoanDto> getBookLoanHistoryByBookIdAndUserId(Long bookId, Long userId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = userRepository.findUserByUsername(authentication.getName());
+        if (!Objects.equals(currentUser.getId(), userId)) {
+            throw new AccessDeniedException("You don't have permissions to access this resource");
+        }
+
+        List<Loan> loans = loanRepository.findAllByUserBookUserIdAndUserBookBookId(userId, bookId);
+
+        return loans.stream().map(LoanDto::fromEntity).toList();
+    }
+
+
 }

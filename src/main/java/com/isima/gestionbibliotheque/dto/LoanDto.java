@@ -1,5 +1,8 @@
 package com.isima.gestionbibliotheque.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.isima.gestionbibliotheque.model.Loan;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.model.UserBook;
@@ -13,8 +16,13 @@ import java.time.LocalDate;
 @Builder
 public class LoanDto {
     private Long id;
+
+    @JsonIgnoreProperties({"userBooks", "createdAt", "birthDate"})
     private User borrower;
+
+    @JsonIgnore
     private UserBook userBook;
+
     private LocalDate borrowedAt;
     private LocalDate returnedAt;
     private LocalDate expectedReturnDate;

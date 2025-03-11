@@ -2,7 +2,7 @@ package com.isima.gestionbibliotheque.controller;
 
 import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
-import com.isima.gestionbibliotheque.controller.api.CollectionApi;
+import com.isima.gestionbibliotheque.controller.api.CollectionApiDocs;
 import com.isima.gestionbibliotheque.dto.*;
 import com.isima.gestionbibliotheque.service.AccessKeyService;
 import com.isima.gestionbibliotheque.service.CollectionService;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
@@ -25,13 +24,13 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-public class CollectionController implements CollectionApi {
+public class CollectionControllerDocs implements CollectionApiDocs {
 
     private final CollectionService collectionService;
     private final AccessKeyService accessKeyService;
 
     @Autowired
-    public CollectionController(
+    public CollectionControllerDocs(
             CollectionService collectionService,
             AccessKeyService accessKeyService
     ) {

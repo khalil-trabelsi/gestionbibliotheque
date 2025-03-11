@@ -1,8 +1,10 @@
 package com.isima.gestionbibliotheque.controller;
 
 import com.isima.gestionbibliotheque.Exception.BadRequestException;
+import com.isima.gestionbibliotheque.controller.api.LoanApiDocs;
 import com.isima.gestionbibliotheque.dto.BorrowBookRequest;
 import com.isima.gestionbibliotheque.dto.LoanDto;
+import com.isima.gestionbibliotheque.model.Loan;
 import com.isima.gestionbibliotheque.model.User;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.LoanService;
@@ -24,16 +26,45 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/loan")
 @Slf4j
-public class LoanController {
+public class LoanController implements LoanApiDocs {
     private final LoanService loanService;
     @Autowired
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 
-    @PostMapping
+    @Override
+    public ResponseEntity<List<LoanDto>> getBorrowerLoanHistory(
+            Authentication authentication
+    ) {
+        User borrower = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok(loanService.getBookLoanHistoryByBorrowerId(borrower.getId()));
+    }
+
+    @Override
+    public ResponseEntity<List<LoanDto>> getAllBorrowedBooks(@PathVariable Long borrowerId) {
+        return ResponseEntity.ok(loanService.getAllBorrowedBooks(borrowerId));
+    }
+
+    @Override
+
+    public ResponseEntity<List<LoanDto>> getAllReturnedBooks(@PathVariable Long borrowerId) {
+        return ResponseEntity.ok(loanService.getAllReturnedBooks(borrowerId));
+    }
+
+    @Override
+
+    public ResponseEntity<List<LoanDto>> getBookLoanHistory(
+            @RequestParam(name = "bookId") Long bookId,
+            @RequestParam(name = "userId") Long userId
+    ) {
+        return ResponseEntity.ok(loanService.getBookLoanHistoryByBookIdAndUserId(bookId, userId));
+    }
+
+    @Override
+
     public ResponseEntity<LoanDto> borrowBook(
             @Valid @RequestBody BorrowBookRequest borrowBookRequest,
             BindingResult bindingResult) {
@@ -48,23 +79,9 @@ public class LoanController {
         return ResponseEntity.ok(loanService.borrowBook(borrowBookRequest));
     }
 
-    @PutMapping("/{loanId}/return_book")
+    @Override
     public ResponseEntity<LoanDto> returnBook(@PathVariable Long loanId) {
         return ResponseEntity.ok(loanService.returnBorrowedBook(loanId));
     }
-
-
-    @GetMapping("/transaction_history/users/{borrowerId}/borrowed_books")
-    public ResponseEntity<List<LoanDto>> getAllBorrowedBooks(@PathVariable Long borrowerId) {
-        return ResponseEntity.ok(loanService.getAllBorrowedBooks(borrowerId));
-    }
-
-    @GetMapping("/transaction_history/users/{borrowerId}/returned_books")
-    public ResponseEntity<List<LoanDto>> getAllReturnedBooks(@PathVariable Long borrowerId) {
-        return ResponseEntity.ok(loanService.getAllReturnedBooks(borrowerId));
-    }
-
-
-
 
 }

@@ -9,11 +9,12 @@ import java.util.List;
 public interface LoanService {
     LoanDto borrowBook(BorrowBookRequest borrowBookRequest);
     LoanDto returnBorrowedBook(Long loanId);
-    List<LoanDto> getBorrowedBooksByUserId(Long borrowerId);
     List<LoanDto> getAllReturnedBooks(Long borrowerId);
     List<LoanDto> getAllBorrowedBooks(Long borrowerId);
 
-    List<LoanDto> getUserLoans(Long borrowerId);
+    List<LoanDto> getBookLoanHistoryByBookIdAndUserId(Long bookId, Long userId);
+
+    List<LoanDto> getBookLoanHistoryByBorrowerId(Long userId);
 
 
 }
