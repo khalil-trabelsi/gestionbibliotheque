@@ -10,6 +10,6 @@ import java.util.List;
 public interface UserBookRepository extends JpaRepository<UserBook, Long> {
     List<UserBook> findAllByUserId(Long user_id);
 
-    UserBook findByBookIdAndUserId(Long bookId, Long userId);
+    UserBook findByUserIdAndBookId(Long userId, Long bookId);
 
 }

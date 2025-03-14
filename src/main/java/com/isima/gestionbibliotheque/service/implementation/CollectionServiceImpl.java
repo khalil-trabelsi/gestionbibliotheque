@@ -1,19 +1,17 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
-import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
 import com.isima.gestionbibliotheque.dto.CollectionDto;
 import com.isima.gestionbibliotheque.dto.CreateCollectionDto;
+import com.isima.gestionbibliotheque.dto.UpdateCollectionDto;
 import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.model.Collection;
+import com.isima.gestionbibliotheque.repository.BookRepository;
 import com.isima.gestionbibliotheque.repository.CollectionRepository;
-import com.isima.gestionbibliotheque.repository.UserBookRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.AccessKeyService;
 import com.isima.gestionbibliotheque.service.CollectionService;
-import com.isima.gestionbibliotheque.service.UserBookService;
-import jakarta.persistence.Access;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -33,19 +31,21 @@ public class CollectionServiceImpl implements CollectionService {
     private final UserRepository userRepository;
     private final AccessKeyService accessKeyService;
 
-    private final UserBookService userBookService;
+
+    private final BookRepository bookRepository;
+
 
     @Autowired
     public CollectionServiceImpl(
             CollectionRepository collectionRepository,
             UserRepository userRepository,
             AccessKeyService accessKeyService,
-            UserBookService userBookService
+            BookRepository bookRepository
     ) {
         this.collectionRepository = collectionRepository;
         this.userRepository = userRepository;
         this.accessKeyService = accessKeyService;
-        this.userBookService = userBookService;
+        this.bookRepository = bookRepository;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public List<CollectionDto> getAllCollectionsByUserBookId(Long userBookId) {
-        return collectionRepository.findAllByUserBooksId(userBookId).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+    public List<CollectionDto> getAllCollectionsByBookId(Long bookID) {
+        return collectionRepository.findAllByBooksId(bookID).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
@@ -121,24 +121,41 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public CollectionDto updateCollection(CreateCollectionDto dto, Long collectionId, String key) {
-        List<String> userBookErrors = new ArrayList<>();
-        List<UserBook> userBooks = new ArrayList<>();
+    @Transactional
+    public CollectionDto updateCollection(UpdateCollectionDto dto, Long collectionId, String key) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        validateUserBooks(dto, userBookErrors, userBooks);
-
-        if (!userBookErrors.isEmpty()) {
-            throw new BadRequestException("User book(s) not founds", ErrorCode.USER_BOOK_NOT_FOUND, userBookErrors);
-        }
+        List<String> bookErrors = new ArrayList<>();
+        List<Book> existingBooks = new ArrayList<>();
 
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () -> new EntityNotFoundException("Cannot find collection")
         );
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Check the existence of books
+        if (dto.getBooksId() != null) {
+            for (Long bookId: dto.getBooksId()) {
+                try {
+                    Book existingBook = bookRepository.findById(bookId).orElseThrow(
+                            () -> new EntityNotFoundException("Cannot find book")
+                    );
+                    existingBooks.add(existingBook);
+                } catch (Exception e) {
+                    bookErrors.add(e.getMessage());
+                }
+            }
+        }
+
+        if (!bookErrors.isEmpty()) {
+            throw new EntityNotFoundException("Some books not founds", ErrorCode.USER_BOOK_NOT_FOUND, bookErrors);
+        }
+
+        // Check if user is allowed to modify the collection
         if (authentication != null && authentication.isAuthenticated()) {
+
             if (collection.getUser().getUsername().equals(authentication.getName())) {
-                collection.setUserBooks(userBooks);
+
+                collection.setBooks(existingBooks);
                 collection.setName(dto.getName());
                 collection.setDescription(dto.getDescription());
                 collection.setPublic(dto.isPublic());
@@ -146,10 +163,11 @@ public class CollectionServiceImpl implements CollectionService {
             }
         }
 
+        // Check access with a key
         if (key != null) {
             AccessKey accessKey = accessKeyService.getAccessKeyById(UUID.fromString(key));
             if (accessKey.getPermissions().contains(Permission.COLLECTION_UPDATE)) {
-                collection.setUserBooks(userBooks);
+                collection.setBooks(existingBooks);
                 collection.setName(dto.getName());
                 collection.setDescription(dto.getDescription());
                 return CollectionDto.fromEntity(collectionRepository.save(collection));
@@ -158,6 +176,7 @@ public class CollectionServiceImpl implements CollectionService {
 
         throw new AccessDeniedException("You don't have permission to modify this collection.");
     }
+
     @Override
     public void deleteCollection(Long collectionId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
@@ -174,36 +193,23 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
 
-    private void validateUserBooks(CreateCollectionDto dto, List<String> userBookErrors, List<UserBook> userBooks) {
-//        if (dto.getUserBookIds() != null) {
-//            for (Long userBookId: dto.getUserBookIds()) {
-//                Optional<UserBook> existingUserBook = userBookRepository.findById(userBookId);
-//                log.info("user Book: "+existingUserBook.isEmpty());
-//                if (existingUserBook.isEmpty()) {
-//                    userBookErrors.add(String.format("Cannot find userBook with Id %d", userBookId));
-//                } else {
-//                    userBooks.add(existingUserBook.get());
-//                }
-//            }
-//        }
-//        if (!userBookErrors.isEmpty()) {
-//            throw new BadRequestException("User book(s) not founds", ErrorCode.USER_BOOK_NOT_FOUND, userBookErrors);
-//        }
-    }
 
     @Override
     public CollectionDto addBookToCollection(Long collectionId, Long bookId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
-                () -> new EntityNotFoundException("cannot find collection")
+                () -> new EntityNotFoundException(String.format("Cannot find collection with ID %d", collectionId))
         );
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             if (collection.getUser().getUsername().equals(authentication.getName())) {
-                UserBook userBook = userBookService.createUserBook(bookId, authentication.getName());
 
-                if (!collection.getUserBooks().contains(userBook)) {
-                    collection.getUserBooks().add(userBook);
+                Book existingBook = bookRepository.findById(bookId).orElseThrow(
+                        () -> new EntityNotFoundException("Cannot find book")
+                );
+                if (!collection.getBooks().contains(existingBook)) {
+
+                    collection.getBooks().add(existingBook);
                     collectionRepository.save(collection);
                 }
 

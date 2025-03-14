@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.dto.BookDto;
-import com.isima.gestionbibliotheque.dto.FeedbackRequest;
 import com.isima.gestionbibliotheque.dto.OpenLibrarySearchResponse;
-import com.isima.gestionbibliotheque.helpers.DateParser;
 import com.isima.gestionbibliotheque.model.Author;
 import com.isima.gestionbibliotheque.model.Book;
 import com.isima.gestionbibliotheque.model.CoverImage;
@@ -16,7 +14,6 @@ import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -167,7 +164,7 @@ public class BookServiceImpl implements BookService {
             if (dataNode.get("number_of_pages") != null) {
                 book.setNumberOfPages(dataNode.get("number_of_pages").asText());
             }
-            book.setPublishDate(DateParser.parseDate(dataNode.get("publish_date").asText()));
+            book.setPublishDate(dataNode.get("publish_date").asText());
             book.setCreatedAt(new Date());
             book.setTitle(dataNode.get("title").asText());
             book.setIsbn(isbn);

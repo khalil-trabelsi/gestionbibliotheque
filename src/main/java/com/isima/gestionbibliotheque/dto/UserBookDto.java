@@ -22,7 +22,7 @@ public class UserBookDto {
     private User user;
     private Book book;
     private List<Tag> tags = new ArrayList<>();
-    private List<Collection> collections = new ArrayList<>();
+//    private List<Collection> collections = new ArrayList<>();
 
     public static UserBook toEntity(UserBookDto userBookDto) {
         if (userBookDto == null) {
@@ -37,7 +37,7 @@ public class UserBookDto {
         userBook.setRating(userBookDto.getRating());
         userBook.setLocation(userBookDto.getLocation());
         userBook.setStatus(userBookDto.getStatus());
-        userBook.setCollections(userBookDto.getCollections());
+//        userBook.setCollections(userBookDto.getCollections());
 
         return userBook;
     }
@@ -54,7 +54,7 @@ public class UserBookDto {
                 .location(userBook.getLocation())
                 .status(userBook.getStatus())
                 .comment(userBook.getComment())
-                .collections(userBook.getCollections())
+//                .collections(userBook.getCollections())
                 .build();
     }
 }

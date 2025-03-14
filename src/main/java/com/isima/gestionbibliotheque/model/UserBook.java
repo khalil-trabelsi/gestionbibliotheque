@@ -1,6 +1,5 @@
 package com.isima.gestionbibliotheque.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -42,11 +41,10 @@ public class UserBook {
     @OneToMany(mappedBy = "userBook")
     private List<Tag> tags = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "userBooks")
-    @JsonIgnore
-    private List<Collection> collections = new ArrayList<>();
 
     @OneToMany(mappedBy = "userBook")
     @JsonIgnore
     private List<Loan> loans = new ArrayList<>();
+
+
 }

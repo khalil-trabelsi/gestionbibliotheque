@@ -24,7 +24,7 @@ public class Book {
     private String title;
     private String subtitle;
     private String numberOfPages;
-    private LocalDate publishDate;
+    private String publishDate;
     @ManyToMany
     private List<Publisher> publishers;
     private String description;
@@ -43,6 +43,10 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookFeedback> bookFeedback;
 
+    @ManyToMany(mappedBy = "books")
+    @JsonIgnore
+    private List<Collection> collections = new ArrayList<>();
+
 
     @Transient
     public double getRate() {
@@ -54,6 +58,8 @@ public class Book {
 
         return Math.round(rating * 10.0) / 10.0;
     }
+
+
 
 
 }

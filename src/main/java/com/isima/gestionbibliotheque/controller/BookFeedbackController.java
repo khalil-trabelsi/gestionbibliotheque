@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class BookFeedbackControllerDocs implements BookFeedbackApiDocs {
+public class BookFeedbackController implements BookFeedbackApiDocs {
 
     private final BookFeedbackService bookFeedbackService;
 

@@ -24,13 +24,13 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-public class CollectionControllerDocs implements CollectionApiDocs {
+public class CollectionController implements CollectionApiDocs {
 
     private final CollectionService collectionService;
     private final AccessKeyService accessKeyService;
 
     @Autowired
-    public CollectionControllerDocs(
+    public CollectionController(
             CollectionService collectionService,
             AccessKeyService accessKeyService
     ) {
@@ -55,8 +55,8 @@ public class CollectionControllerDocs implements CollectionApiDocs {
     }
 
     @Override
-    public ResponseEntity<List<CollectionDto>> getAllCollectionsByUserBookId(@PathVariable Long userBookId) {
-        return ResponseEntity.ok(collectionService.getAllCollectionsByUserBookId(userBookId));
+    public ResponseEntity<List<CollectionDto>> getAllCollectionsByBookId(@PathVariable Long bookId) {
+        return ResponseEntity.ok(collectionService.getAllCollectionsByBookId(bookId));
     }
 
     @Override
@@ -90,11 +90,11 @@ public class CollectionControllerDocs implements CollectionApiDocs {
 
     @Override
     public CollectionDto updateCollection(
-            @RequestBody CreateCollectionDto createCollectionDto,
+            @RequestBody UpdateCollectionDto updateCollectionDto,
             @PathVariable Long collectionId,
             @RequestParam(required = false) String key
             ) {
-        return collectionService.updateCollection(createCollectionDto, collectionId, key);
+        return collectionService.updateCollection(updateCollectionDto, collectionId, key);
     }
     @Override
     public ResponseEntity<Map<String, String>> deleteCollection(@PathVariable Long collectionId) {

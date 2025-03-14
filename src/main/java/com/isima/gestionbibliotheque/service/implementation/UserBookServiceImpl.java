@@ -2,7 +2,6 @@ package com.isima.gestionbibliotheque.service.implementation;
 
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
-import com.isima.gestionbibliotheque.dto.FeedbackRequest;
 import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.UserBookService;
@@ -53,7 +52,7 @@ public class UserBookServiceImpl implements UserBookService {
         );
         User user = userRepository.findUserByUsername(username);
         // if a link between a user and a book already exists then we will not create a new link
-        UserBook userBook  = userBookRepository.findByBookIdAndUserId(bookId, user.getId());
+        UserBook userBook  = userBookRepository.findByUserIdAndBookId(user.getId(), bookId);
         if (userBook != null) {
             return userBook;
         }
@@ -81,7 +80,10 @@ public class UserBookServiceImpl implements UserBookService {
         userBookRepository.delete(userBook);
     }
 
-
+    @Override
+    public UserBook getUserBookByUserIdAndBookId(Long userId, Long bookId) {
+        return null;
+    }
 
 
 }

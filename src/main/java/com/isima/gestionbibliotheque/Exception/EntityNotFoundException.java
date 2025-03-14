@@ -2,6 +2,8 @@ package com.isima.gestionbibliotheque.Exception;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class EntityNotFoundException extends RuntimeException {
     private ErrorCode errorCode;
@@ -21,6 +23,9 @@ public class EntityNotFoundException extends RuntimeException {
         super(message, cause);
         this.errorCode = errorCode;
     }
-
+    public EntityNotFoundException(String message, ErrorCode errorCode, List<String> errors) {
+        super(message);
+        this.errorCode = errorCode;
+    }
 
 }

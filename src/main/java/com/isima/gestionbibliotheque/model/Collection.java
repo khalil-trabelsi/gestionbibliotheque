@@ -1,6 +1,7 @@
 package com.isima.gestionbibliotheque.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +30,10 @@ public class Collection {
     private User user;
 
     @ManyToMany
-    private List<UserBook> userBooks = new ArrayList<>();
+    private List<Book> books = new ArrayList<>();
+
+//    @ManyToMany
+//    private List<UserBook> userBooks = new ArrayList<>();
 
     @OneToMany(mappedBy = "collection",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore

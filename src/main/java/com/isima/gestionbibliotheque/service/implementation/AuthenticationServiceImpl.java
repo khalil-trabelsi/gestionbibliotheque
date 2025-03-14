@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.dto.auth.AuthRequest;
 import com.isima.gestionbibliotheque.dto.auth.AuthResponse;
 import com.isima.gestionbibliotheque.dto.auth.UserRegistrationDto;
+import com.isima.gestionbibliotheque.model.Collection;
 import com.isima.gestionbibliotheque.model.CustomUserDetails;
 import com.isima.gestionbibliotheque.model.Token;
 import com.isima.gestionbibliotheque.model.User;
+import com.isima.gestionbibliotheque.repository.CollectionRepository;
 import com.isima.gestionbibliotheque.repository.TokenRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.AuthenticationService;
+import com.isima.gestionbibliotheque.service.CollectionService;
 import com.isima.gestionbibliotheque.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +28,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -35,12 +41,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
+    private final CollectionRepository collectionRepository;
 
 
     @Override
     public AuthResponse register(UserRegistrationDto userRegistrationDto) {
         User user = new User();
-        user.setUsername(userRegistrationDto.getUsername());
         user.setUsername(userRegistrationDto.getUsername());
         user.setEmail(userRegistrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(userRegistrationDto.getPassword()));
@@ -51,7 +57,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var jwt = jwtService.generateToken(savedUser.getUsername());
         var refreshToken = jwtService.generateRefreshToken(savedUser.getUsername());
         saveUserToken(savedUser, jwt);
-        return AuthResponse.builder().accessToken(jwt).refreshToken(refreshToken).build();
+
+        // By default, each user must have 5 collections
+        Map<String, String> defaultCollections = Map.of(
+                "j'ai", "Les livres que je possède",
+                "whishlist", "Les livres que je souhaite acquérir",
+                "j'ai lu", "Les livres que j'ai déjà lus",
+                "je lis", "Les livres que je suis en train de lire",
+                "j'aime", "Mes livres préférés"
+        );
+
+        defaultCollections.forEach((name, description) -> {
+            Collection collection = new Collection();
+            collection.setName(name);
+            collection.setDescription(description);
+            collection.setUser(user);
+            collection.setPublic(true);
+            collectionRepository.save(collection);
+        });
+
+        return AuthResponse.builder()
+                .accessToken(jwt)
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .build();
     }
 
     @Override
@@ -64,7 +93,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(user.getUsername());
         revokeAllTokens(user);
         saveUserToken(user, jwt);
-        return AuthResponse.builder().accessToken(jwt).refreshToken(refreshToken).build();
+        return AuthResponse.builder().accessToken(jwt).refreshToken(refreshToken).userId(user.getId()).build();
     }
 
     @Override

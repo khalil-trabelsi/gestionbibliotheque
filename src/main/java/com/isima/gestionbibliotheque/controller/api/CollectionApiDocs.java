@@ -109,8 +109,8 @@ public interface CollectionApiDocs {
                     )
             }
     )
-    @GetMapping("/userBooks/{userBookId}")
-    ResponseEntity<List<CollectionDto>> getAllCollectionsByUserBookId(@PathVariable Long userBookId);
+    @GetMapping("/books/{bookId}")
+    ResponseEntity<List<CollectionDto>> getAllCollectionsByBookId(@PathVariable Long bookId);
 
     @Operation(
             summary = "Create a new collection",
@@ -193,7 +193,7 @@ public interface CollectionApiDocs {
             responses = {
                     @ApiResponse(
                             responseCode = "200", description = "Collection successfully shared. Returns the access key and details.",
-                            content = @Content(schema = @Schema(implementation = SharedCollectionResponseDto.class))
+                            content = @Content(schema = @Schema(implementation = CollectionDto.class))
                     ),
                     @ApiResponse(
                             responseCode = "400",
@@ -216,7 +216,7 @@ public interface CollectionApiDocs {
             }
     )
     CollectionDto updateCollection(
-            @RequestBody CreateCollectionDto createCollectionDto,
+            @RequestBody UpdateCollectionDto updateCollectionDto,
             @PathVariable Long collectionId,
             @RequestParam(required = false) String key
     );
@@ -276,7 +276,7 @@ public interface CollectionApiDocs {
                     content = @Content(schema = @Schema(implementation = ErrorEntity.class))
             )}
     )
-    @PostMapping("/add_book_collection")
+    @PostMapping("/add_book")
     ResponseEntity<CollectionDto> addBookToCollection(@RequestBody BookCollectionRequest bookCollectionRequest);
 
 }

@@ -12,4 +12,6 @@ public interface UserBookService {
     UserBook createUserBook(Long bookId, String username);
     void deleteUserBook(Long userBookId);
 
+    UserBook getUserBookByUserIdAndBookId(Long userId, Long bookId);
+
 }

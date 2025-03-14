@@ -20,7 +20,7 @@ public class BookDto {
     private String isbn;
     private String title;
     private String subtitle;
-    private LocalDate publishDate;
+    private String publishDate;
     private List<Publisher> publishers;
     private String description;
     private String coverImageUrl;
@@ -31,6 +31,7 @@ public class BookDto {
     private CoverImage coverImage;
     private List<BookFeedback> bookFeedbacks = new ArrayList<>();
     private double rating;
+    private List<Collection> collections = new ArrayList<>();
 
     public static BookDto fromEntity(Book book) {
         return book == null ? null :
@@ -50,6 +51,7 @@ public class BookDto {
                         .coverImage(book.getCoverImage())
                         .bookFeedbacks(book.getBookFeedback())
                         .rating(book.getRate())
+                        .collections(book.getCollections())
                         .build();
     }
 
@@ -72,6 +74,8 @@ public class BookDto {
         book.setUserBooks(bookDto.getUserBooks());
         book.setCoverImage(bookDto.getCoverImage());
         book.setNumberOfPages(bookDto.getNumberOfPages());
+        book.setCollections(bookDto.getCollections());
+
 
         return book;
 
