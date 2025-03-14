@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
+import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.dto.CreateTagDto;
 import com.isima.gestionbibliotheque.dto.TagDto;
 import com.isima.gestionbibliotheque.model.Tag;
@@ -45,22 +46,18 @@ public class TagServiceImpl implements TagsService {
 
     @Override
     public TagDto createTag(CreateTagDto createTagDto) {
-        // Récupérer l'utilisateur connecté (utiliser Spring Security pour ça)
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findUserByUsername(username);
 
-        // Récupérer le UserBook
         UserBook userBook = userBookRepository.findById(createTagDto.getUserBookId())
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
-        // Créer le Tag
         Tag tag = new Tag();
         tag.setLabel(createTagDto.getLabel());
         tag.setColor(createTagDto.getColor());
         tag.setUser(user);
         tag.setUserBook(userBook);
 
-        // Sauvegarder et retourner le DTO
         tag = tagRepository.save(tag);
         return TagDto.fromEntity(tag);
     }
@@ -68,12 +65,12 @@ public class TagServiceImpl implements TagsService {
     @Override
     public TagDto updateTag(TagDto tagDto) {
         Tag tag = tagRepository.findById(tagDto.getId())
-                .orElseThrow(() -> new RuntimeException("Tag not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
 
         User user = userRepository.findById(tagDto.getUser().getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         UserBook book = userBookRepository.findById(tagDto.getUserBook().getId())
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Book not found"));
 
         tag.setLabel(tagDto.getLabel());
         tag.setColor(tagDto.getColor());

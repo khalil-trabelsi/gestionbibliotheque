@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TagsService {
-    public List<TagDto> getAllTags();
-    public Optional<TagDto> getTagById(Long id);
-    public TagDto createTag(CreateTagDto createTagDto);
-    public TagDto updateTag(TagDto tagDto);
-    public void deleteTag(Long id);
+     List<TagDto> getAllTags();
+     Optional<TagDto> getTagById(Long id);
+     TagDto createTag(CreateTagDto createTagDto);
+     TagDto updateTag(TagDto tagDto);
+     void deleteTag(Long id);
 
 }

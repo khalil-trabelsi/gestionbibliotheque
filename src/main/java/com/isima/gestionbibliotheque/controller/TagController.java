@@ -3,16 +3,18 @@ package com.isima.gestionbibliotheque.controller;
 import com.isima.gestionbibliotheque.dto.CreateTagDto;
 import com.isima.gestionbibliotheque.dto.TagDto;
 import com.isima.gestionbibliotheque.service.TagsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/tags")
+@RequestMapping("/api/tags")
 public class TagController {
     private final TagsService tagService;
 
+    @Autowired
     public TagController(TagsService tagService) {
         this.tagService = tagService;
     }
@@ -31,20 +33,12 @@ public class TagController {
 
     @PostMapping
     public ResponseEntity<TagDto> createTag(@RequestBody CreateTagDto tagDto) {
-        try {
-            return ResponseEntity.ok(tagService.createTag(tagDto));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        return ResponseEntity.ok(tagService.createTag(tagDto));
     }
 
     @PutMapping()
     public ResponseEntity<TagDto> updateTag(@RequestBody TagDto tagDto) {
-        try {
-            return ResponseEntity.ok(tagService.updateTag(tagDto));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(tagService.updateTag(tagDto));
     }
 
     @DeleteMapping("/{id}")
