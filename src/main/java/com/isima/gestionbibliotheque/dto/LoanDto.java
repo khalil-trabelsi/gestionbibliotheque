@@ -20,7 +20,7 @@ public class LoanDto {
     @JsonIgnoreProperties({"userBooks", "createdAt", "birthDate"})
     private User borrower;
 
-    @JsonIgnore
+    @JsonIncludeProperties({"id", "book"})
     private UserBook userBook;
 
     private LocalDate borrowedAt;

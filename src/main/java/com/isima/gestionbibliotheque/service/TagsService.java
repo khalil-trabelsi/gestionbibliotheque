@@ -9,6 +9,9 @@ import java.util.Optional;
 
 public interface TagsService {
      List<TagDto> getAllTags();
+
+     List<TagDto> getTagsByBookId(Long bookId);
+
      Optional<TagDto> getTagById(Long id);
      TagDto createTag(CreateTagDto createTagDto);
      TagDto updateTag(TagDto tagDto);

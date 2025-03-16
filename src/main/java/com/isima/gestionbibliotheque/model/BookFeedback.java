@@ -19,7 +19,7 @@ public class BookFeedback {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private double rating;
+    private int rating;
     private String comment;
 
     @ManyToOne

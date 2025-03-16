@@ -33,7 +33,6 @@ public class CollectionDto {
 
     @JsonIncludeProperties({"username", "id"})
     private User user;
-//    private List<UserBook> userBooks;
     private List<Book> books = new ArrayList<>();
 
     public static Collection toEntity(CollectionDto collectionDto) {
@@ -43,7 +42,7 @@ public class CollectionDto {
         collection.setId(collectionDto.getId());
         collection.setUser(collectionDto.getUser());
         collection.setName(collectionDto.getName());
-        collection.setPublic(collectionDto.isPublic());
+        collection.setShareable(collectionDto.isPublic());
         collection.setDescription(collectionDto.getDescription());
         collection.setCreatedAt(collectionDto.getCreatedAt());
         collection.setBooks(collectionDto.getBooks());
@@ -61,7 +60,7 @@ public class CollectionDto {
                         .user(collection.getUser())
                         .books(collection.getBooks())
                         .createdAt(collection.getCreatedAt())
-                        .isPublic(collection.isPublic())
+                        .isPublic(collection.isShareable())
                         .build();
     }
 }

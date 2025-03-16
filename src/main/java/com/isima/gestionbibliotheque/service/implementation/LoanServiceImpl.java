@@ -45,7 +45,11 @@ public class LoanServiceImpl implements LoanService {
 
         if (authentication != null && authentication.isAuthenticated()) {
             UserBook userBook = userBookRepository.findById(borrowBookRequest.getUserBookId())
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("User Book %d not found ", borrowBookRequest.getUserBookId())));
+                    .orElseThrow(() ->
+                            new EntityNotFoundException(
+                                    String.format("The book with ID %d does not exist in the user's library. ", borrowBookRequest.getUserBookId())
+                            ));
+
             User user = userRepository.findUserByUsername(authentication.getName());
             if (userBook.getUser().getUsername().equals(user.getUsername())) {
                 throw new OperationNotPermittedException("You cannot borrow your own book");
@@ -54,7 +58,6 @@ public class LoanServiceImpl implements LoanService {
             if (userBook.getStatus().equals(BookStatus.BORROWED)) {
                 throw new OperationNotPermittedException("The requested book is already borrowed");
             }
-
 
 
             Loan loan = Loan.builder()

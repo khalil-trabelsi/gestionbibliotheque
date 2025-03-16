@@ -72,7 +72,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             collection.setName(name);
             collection.setDescription(description);
             collection.setUser(user);
-            collection.setPublic(true);
+            collection.setShareable(false);
             collectionRepository.save(collection);
         });
 

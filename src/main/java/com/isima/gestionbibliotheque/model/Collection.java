@@ -21,7 +21,7 @@ public class Collection {
     private Long id;
     private String name;
     private String description;
-    private boolean isPublic;
+    private boolean shareable;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -31,9 +31,6 @@ public class Collection {
 
     @ManyToMany
     private List<Book> books = new ArrayList<>();
-
-//    @ManyToMany
-//    private List<UserBook> userBooks = new ArrayList<>();
 
     @OneToMany(mappedBy = "collection",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore

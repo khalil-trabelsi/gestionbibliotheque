@@ -36,11 +36,9 @@ public class LoanController implements LoanApiDocs {
 
     @Override
     public ResponseEntity<List<LoanDto>> getBorrowerLoanHistory(
-            Authentication authentication
+            Long borrowerId
     ) {
-        User borrower = (User) authentication.getPrincipal();
-
-        return ResponseEntity.ok(loanService.getBookLoanHistoryByBorrowerId(borrower.getId()));
+        return ResponseEntity.ok(loanService.getBookLoanHistoryByBorrowerId(borrowerId));
     }
 
     @Override
@@ -49,13 +47,11 @@ public class LoanController implements LoanApiDocs {
     }
 
     @Override
-
     public ResponseEntity<List<LoanDto>> getAllReturnedBooks(@PathVariable Long borrowerId) {
         return ResponseEntity.ok(loanService.getAllReturnedBooks(borrowerId));
     }
 
     @Override
-
     public ResponseEntity<List<LoanDto>> getBookLoanHistory(
             @RequestParam(name = "bookId") Long bookId,
             @RequestParam(name = "userId") Long userId
@@ -64,7 +60,6 @@ public class LoanController implements LoanApiDocs {
     }
 
     @Override
-
     public ResponseEntity<LoanDto> borrowBook(
             @Valid @RequestBody BorrowBookRequest borrowBookRequest,
             BindingResult bindingResult) {

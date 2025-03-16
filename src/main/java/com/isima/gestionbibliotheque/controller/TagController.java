@@ -31,6 +31,11 @@ public class TagController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/books/{bookId}")
+    public ResponseEntity<List<TagDto>> getAllTagsByBookId(@PathVariable Long bookId) {
+        return ResponseEntity.ok(tagService.getTagsByBookId(bookId));
+    }
+
     @PostMapping
     public ResponseEntity<TagDto> createTag(@RequestBody CreateTagDto tagDto) {
         return ResponseEntity.ok(tagService.createTag(tagDto));

@@ -1,7 +1,8 @@
 package com.isima.gestionbibliotheque.repository;
 
-import com.isima.gestionbibliotheque.model.Loan;
 import com.isima.gestionbibliotheque.model.BookStatus;
+import com.isima.gestionbibliotheque.model.Loan;
+import com.isima.gestionbibliotheque.model.UserBook;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,9 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findAllByUserBookUserIdAndUserBookBookId(Long userId, Long bookId);
 
     List<Loan> findAllByBorrowerId(Long userId);
+
+    List<Loan> findAllByUserBookId(Long userBookId);
+
+    boolean existsByUserBookAndUserBookStatus(UserBook userBook, BookStatus status);
 
 }

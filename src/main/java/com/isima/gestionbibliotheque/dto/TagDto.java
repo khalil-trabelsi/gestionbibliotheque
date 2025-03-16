@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.dto;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.isima.gestionbibliotheque.model.Book;
 import com.isima.gestionbibliotheque.model.Tag;
 import com.isima.gestionbibliotheque.model.User;
@@ -17,6 +18,7 @@ public class TagDto {
     private Long id;
     private String label;
     private String color;
+    @JsonIncludeProperties({"username", "id"})
     private User user;
     private UserBook userBook;
 

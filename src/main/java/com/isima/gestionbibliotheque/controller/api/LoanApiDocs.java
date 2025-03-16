@@ -28,8 +28,8 @@ public interface LoanApiDocs {
             }
     )
 
-    @GetMapping("/history/borrowers")
-    ResponseEntity<List<LoanDto>> getBorrowerLoanHistory(Authentication authentication);
+    @GetMapping("/history/borrowers/{borrowerId}")
+    ResponseEntity<List<LoanDto>> getBorrowerLoanHistory(@PathVariable Long borrowerId);
 
     @Operation(
             summary = "Get all borrowed books of a borrower",

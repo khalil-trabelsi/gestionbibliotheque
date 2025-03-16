@@ -4,16 +4,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
+import com.isima.gestionbibliotheque.Exception.OperationNotPermittedException;
 import com.isima.gestionbibliotheque.dto.BookDto;
 import com.isima.gestionbibliotheque.dto.OpenLibrarySearchResponse;
-import com.isima.gestionbibliotheque.model.Author;
-import com.isima.gestionbibliotheque.model.Book;
-import com.isima.gestionbibliotheque.model.CoverImage;
-import com.isima.gestionbibliotheque.model.Publisher;
+import com.isima.gestionbibliotheque.dto.UserBookDto;
+import com.isima.gestionbibliotheque.model.*;
 import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.BookService;
+import com.isima.gestionbibliotheque.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -33,6 +36,14 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final PublisherRepository publisherRepository;
     private final CoverImageRepository coverImageRepository;
+    private final UserBookRepository userBookRepository;
+    private final CollectionRepository collectionRepository;
+    private final BookFeedbackRepository bookFeedbackRepository;
+    private final LoanRepository loanRepository;
+    private final TagRepository tagRepository;
+    private final UserRepository userRepository;
+
+
     private static final String OPEN_LIBRARY_SEARCH_API_URL = "https://openlibrary.org/search.json?q=%s";
     private static final String OPEN_LIBRARY_DETAILS_API_URL = "https://openlibrary.org/api/volumes/brief/isbn/%s.json";
 
@@ -45,14 +56,25 @@ public class BookServiceImpl implements BookService {
             ObjectMapper objectMapper,
             AuthorRepository authorRepository,
             PublisherRepository publisherRepository,
-            CoverImageRepository coverImageRepository
-    ) {
+            CoverImageRepository coverImageRepository,
+            UserBookRepository userBookRepository,
+            CollectionRepository collectionRepository,
+            BookFeedbackRepository bookFeedbackRepository,
+            LoanRepository loanRepository,
+            TagRepository tagRepository,
+            UserRepository userRepository) {
         this.bookRepository = bookRepository;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.authorRepository = authorRepository;
         this.publisherRepository = publisherRepository;
         this.coverImageRepository = coverImageRepository;
+        this.userBookRepository = userBookRepository;
+        this.collectionRepository = collectionRepository;
+        this.bookFeedbackRepository = bookFeedbackRepository;
+        this.loanRepository = loanRepository;
+        this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -106,6 +128,56 @@ public class BookServiceImpl implements BookService {
                 () -> new EntityNotFoundException(String.format("Cannot find book with ID %d", bookId))
         );
         return BookDto.fromEntity(book);
+    }
+
+    @Override
+    public List<UserBookDto> getAllBooksByUserId(Long userId) {
+        List<UserBook> userBooks = userBookRepository.findAllByUserId(userId);
+        return userBooks.stream().map(UserBookDto::fromEntity).toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteBookFromLibrary(Long userId, Long bookId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findUserByUsername(authentication.getName());
+
+        if (!user.getId().equals(userId)) {
+            throw new AccessDeniedException("Forbidden. You don't have permissions to delete this book");
+        }
+
+        UserBook  userBook = userBookRepository.findByUserIdAndBookId(userId, bookId);
+
+        if (userBook != null) {
+            boolean hasActiveLoans = loanRepository.existsByUserBookAndUserBookStatus(userBook, BookStatus.BORROWED);
+            if (hasActiveLoans) {
+                throw new OperationNotPermittedException("Cannot delete book because it's currently on loan");
+            }
+
+            bookFeedbackRepository.findByUserIdAndBookId(userId, bookId).ifPresent(
+                    bookFeedbackRepository::delete
+            );
+
+            List<Loan> loans = loanRepository.findAllByUserBookId(userBook.getId());
+            log.info("loans number "+loans.size());
+            loanRepository.deleteAll(loans);
+
+            List<Tag> tags = tagRepository.findAllByUserBookUserIdAndUserBookBookId(userId, bookId);
+            tagRepository.deleteAll(tags);
+
+            List<Collection> collections = collectionRepository.findAllByUserIdAndBooksContaining(userId, userBook.getBook());
+
+            for (Collection collection: collections) {
+                collection.getBooks().remove(userBook.getBook());
+                collectionRepository.save(collection);
+            }
+
+            userBookRepository.delete(userBook);
+
+        } else {
+            throw new EntityNotFoundException("Book not found in user's library");
+        }
+
     }
 
     public Book saveBook(String bookDetailsResponse, String isbn) throws JsonProcessingException {

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Book Feedback", description = "Endpoints to manage book feedbacks")
+@Tag(name = "Book Feedback", description = "API for managing book feedbacks")
 @RequestMapping("/api/bookFeedback")
 public interface BookFeedbackApiDocs {
 
@@ -146,6 +146,11 @@ public interface BookFeedbackApiDocs {
                     @ApiResponse(
                             responseCode = "401",
                             description = "Unauthorized. User is not authenticated.",
+                            content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Forbidden. The user does not have permission to modify this feedback.",
                             content = @Content(schema = @Schema(implementation = ErrorEntity.class))
                     ),
                     @ApiResponse(

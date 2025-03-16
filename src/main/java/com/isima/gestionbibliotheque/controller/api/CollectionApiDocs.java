@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "Collections", description = "Endpoints to manage collections")
+@Tag(name = "Collections", description = "API for managing collections")
 @RequestMapping("/api/collections")
 public interface CollectionApiDocs {
 

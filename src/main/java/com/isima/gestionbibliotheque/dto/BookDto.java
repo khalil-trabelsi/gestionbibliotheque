@@ -1,5 +1,8 @@
 package com.isima.gestionbibliotheque.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.isima.gestionbibliotheque.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,10 +30,13 @@ public class BookDto {
     private Date createdAt;
     private String numberOfPages;
     private List<Author> authors;
+    @JsonIncludeProperties({"id", "status", "location", "rating", "tags"})
     private List<UserBook> userBooks = new ArrayList<>();
     private CoverImage coverImage;
+    @JsonIgnoreProperties({"book", "user"})
     private List<BookFeedback> bookFeedbacks = new ArrayList<>();
     private double rating;
+    @JsonIgnore
     private List<Collection> collections = new ArrayList<>();
 
     public static BookDto fromEntity(Book book) {

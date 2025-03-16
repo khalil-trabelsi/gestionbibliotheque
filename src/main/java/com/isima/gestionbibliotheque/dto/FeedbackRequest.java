@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class FeedbackRequest {
+
     private Long bookId;
-    private double rating;
+    private int rating;
     private String comment;
 }

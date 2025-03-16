@@ -12,6 +12,7 @@ import com.isima.gestionbibliotheque.repository.CollectionRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.AccessKeyService;
 import com.isima.gestionbibliotheque.service.CollectionService;
+import com.isima.gestionbibliotheque.service.UserBookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,6 +32,7 @@ public class CollectionServiceImpl implements CollectionService {
     private final UserRepository userRepository;
     private final AccessKeyService accessKeyService;
 
+    private final UserBookService userBookService;
 
     private final BookRepository bookRepository;
 
@@ -40,22 +42,23 @@ public class CollectionServiceImpl implements CollectionService {
             CollectionRepository collectionRepository,
             UserRepository userRepository,
             AccessKeyService accessKeyService,
-            BookRepository bookRepository
+            UserBookService userBookService, BookRepository bookRepository
     ) {
         this.collectionRepository = collectionRepository;
         this.userRepository = userRepository;
         this.accessKeyService = accessKeyService;
+        this.userBookService = userBookService;
         this.bookRepository = bookRepository;
     }
 
     @Override
     public List<CollectionDto> getAllCollections() {
-        return collectionRepository.findAll().stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+        return collectionRepository.findAllByShareable(true).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
     public List<CollectionDto> getAllCollectionsByBookId(Long bookID) {
-        return collectionRepository.findAllByBooksId(bookID).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+        return collectionRepository.findAllByBooksId(bookID).stream().filter(Collection::isShareable).map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
@@ -73,7 +76,7 @@ public class CollectionServiceImpl implements CollectionService {
             }
         }
 
-        return collections.stream().filter(Collection::isPublic).map(CollectionDto::fromEntity).collect(Collectors.toList());
+        return collections.stream().filter(Collection::isShareable).map(CollectionDto::fromEntity).collect(Collectors.toList());
 
     }
 
@@ -86,12 +89,9 @@ public class CollectionServiceImpl implements CollectionService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            if (collection.getUser().getUsername().equals(authentication.getName())) {
+            if (collection.getUser().getUsername().equals(authentication.getName()) || collection.isShareable()) {
                 return dto;
             }
-        }
-        if (collection.isPublic()) {
-            return dto;
         }
 
         if (key != null) {
@@ -114,7 +114,7 @@ public class CollectionServiceImpl implements CollectionService {
         collection.setName(dto.getName());
         collection.setDescription(dto.getDescription());
         collection.setUser(user);
-        collection.setPublic(dto.isPublic());
+        collection.setShareable(dto.isPublic());
 
         collection = collectionRepository.save(collection);
         return CollectionDto.fromEntity(collection);
@@ -140,6 +140,7 @@ public class CollectionServiceImpl implements CollectionService {
                             () -> new EntityNotFoundException("Cannot find book")
                     );
                     existingBooks.add(existingBook);
+
                 } catch (Exception e) {
                     bookErrors.add(e.getMessage());
                 }
@@ -154,11 +155,14 @@ public class CollectionServiceImpl implements CollectionService {
         if (authentication != null && authentication.isAuthenticated()) {
 
             if (collection.getUser().getUsername().equals(authentication.getName())) {
-
+                // associate a book to the current user
+                existingBooks.forEach(book -> {
+                    userBookService.createUserBook(book.getId(), authentication.getName());
+                });
                 collection.setBooks(existingBooks);
                 collection.setName(dto.getName());
                 collection.setDescription(dto.getDescription());
-                collection.setPublic(dto.isPublic());
+                collection.setShareable(dto.isPublic());
                 return CollectionDto.fromEntity(collectionRepository.save(collection));
             }
         }
@@ -208,6 +212,7 @@ public class CollectionServiceImpl implements CollectionService {
                         () -> new EntityNotFoundException("Cannot find book")
                 );
                 if (!collection.getBooks().contains(existingBook)) {
+                    userBookService.createUserBook(bookId, authentication.getName());
 
                     collection.getBooks().add(existingBook);
                     collectionRepository.save(collection);

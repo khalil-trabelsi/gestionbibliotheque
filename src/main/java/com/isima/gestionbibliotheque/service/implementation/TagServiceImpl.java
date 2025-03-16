@@ -40,6 +40,11 @@ public class TagServiceImpl implements TagsService {
     }
 
     @Override
+    public List<TagDto> getTagsByBookId(Long bookId) {
+        return tagRepository.findAllByUserBookBookId(bookId).stream().map(TagDto::fromEntity).toList();
+    }
+
+    @Override
     public Optional<TagDto> getTagById(Long id) {
         return tagRepository.findById(id).map(TagDto::fromEntity);
     }
@@ -50,7 +55,7 @@ public class TagServiceImpl implements TagsService {
         User user = userRepository.findUserByUsername(username);
 
         UserBook userBook = userBookRepository.findById(createTagDto.getUserBookId())
-                .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Book not found %d", createTagDto.getUserBookId())));
 
         Tag tag = new Tag();
         tag.setLabel(createTagDto.getLabel());
@@ -58,8 +63,7 @@ public class TagServiceImpl implements TagsService {
         tag.setUser(user);
         tag.setUserBook(userBook);
 
-        tag = tagRepository.save(tag);
-        return TagDto.fromEntity(tag);
+        return TagDto.fromEntity(tagRepository.save(tag));
     }
 
     @Override
@@ -77,8 +81,7 @@ public class TagServiceImpl implements TagsService {
         tag.setUser(user);
         tag.setUserBook(book);
 
-        tag = tagRepository.save(tag);
-        return TagDto.fromEntity(tag);
+        return TagDto.fromEntity(tagRepository.save(tag));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.isima.gestionbibliotheque.dto;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.isima.gestionbibliotheque.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,10 +20,10 @@ public class UserBookDto {
     private double rating;
     private String comment;
     private BookStatus status;
+    @JsonIncludeProperties({"id", "username"})
     private User user;
     private Book book;
     private List<Tag> tags = new ArrayList<>();
-//    private List<Collection> collections = new ArrayList<>();
 
     public static UserBook toEntity(UserBookDto userBookDto) {
         if (userBookDto == null) {
