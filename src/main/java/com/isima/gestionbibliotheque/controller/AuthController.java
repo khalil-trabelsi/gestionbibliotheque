@@ -4,6 +4,7 @@ import com.isima.gestionbibliotheque.Exception.BadRequestException;
 import com.isima.gestionbibliotheque.Exception.ErrorCode;
 import com.isima.gestionbibliotheque.dto.auth.AuthRequest;
 import com.isima.gestionbibliotheque.dto.auth.AuthResponse;
+import com.isima.gestionbibliotheque.dto.auth.ChangePasswordRequest;
 import com.isima.gestionbibliotheque.dto.auth.UserRegistrationDto;
 import com.isima.gestionbibliotheque.model.Token;
 import com.isima.gestionbibliotheque.model.User;
@@ -38,7 +39,10 @@ public class AuthController {
     }
 
     @PostMapping(path = "/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegistrationDto request, BindingResult bindingResult) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody UserRegistrationDto request,
+            BindingResult bindingResult,
+            HttpServletResponse response) {
         List<String> errors = new ArrayList<>();
         if (bindingResult.hasErrors()) {
             for (FieldError error: bindingResult.getFieldErrors()) {
@@ -46,13 +50,13 @@ public class AuthController {
             }
             throw new BadRequestException("Invalid input data", null,errors);
         }
-        AuthResponse response = this.authenticationService.register(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        AuthResponse authResponse = this.authenticationService.register(request, response);
+        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
     @PostMapping(path="/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
-        return ResponseEntity.ok(this.authenticationService.login(authRequest));
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest, HttpServletResponse response) {
+        return ResponseEntity.ok(this.authenticationService.login(authRequest, response));
     }
 
     @PostMapping(path="/refresh-token")
@@ -61,6 +65,12 @@ public class AuthController {
             HttpServletResponse response) throws IOException {
         authenticationService.refreshToken(request, response);
     }
+
+    @PutMapping(path="/users/{userId}/change-password")
+    public void changePassword(@PathVariable Long userId, @RequestBody ChangePasswordRequest request) {
+        this.authenticationService.changePassword(userId, request);
+    }
+
 
 
 

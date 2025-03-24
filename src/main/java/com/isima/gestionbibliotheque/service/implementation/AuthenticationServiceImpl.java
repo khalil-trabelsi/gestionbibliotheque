@@ -1,8 +1,11 @@
 package com.isima.gestionbibliotheque.service.implementation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.isima.gestionbibliotheque.Exception.BadRequestException;
+import com.isima.gestionbibliotheque.Exception.EntityNotFoundException;
 import com.isima.gestionbibliotheque.dto.auth.AuthRequest;
 import com.isima.gestionbibliotheque.dto.auth.AuthResponse;
+import com.isima.gestionbibliotheque.dto.auth.ChangePasswordRequest;
 import com.isima.gestionbibliotheque.dto.auth.UserRegistrationDto;
 import com.isima.gestionbibliotheque.model.Collection;
 import com.isima.gestionbibliotheque.model.CustomUserDetails;
@@ -12,25 +15,20 @@ import com.isima.gestionbibliotheque.repository.CollectionRepository;
 import com.isima.gestionbibliotheque.repository.TokenRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.AuthenticationService;
-import com.isima.gestionbibliotheque.service.CollectionService;
 import com.isima.gestionbibliotheque.service.JwtService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -45,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public AuthResponse register(UserRegistrationDto userRegistrationDto) {
+    public AuthResponse register(UserRegistrationDto userRegistrationDto, HttpServletResponse response) {
         User user = new User();
         user.setUsername(userRegistrationDto.getUsername());
         user.setEmail(userRegistrationDto.getEmail());
@@ -58,6 +56,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(savedUser.getUsername());
         saveUserToken(savedUser, jwt);
 
+        Cookie jwtCookie = createAuthCookie("access-token", jwt);
+        Cookie refreshTokenCookie = createAuthCookie("refresh-token", refreshToken);
+
+
+        response.addCookie(jwtCookie);
+        response.addCookie(refreshTokenCookie);
         // By default, each user must have 5 collections
         Map<String, String> defaultCollections = Map.of(
                 "j'ai", "Les livres que je possède",
@@ -84,7 +88,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthResponse login(AuthRequest authRequest) {
+    public AuthResponse login(AuthRequest authRequest, HttpServletResponse response) {
         var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
                 authRequest.getPassword()));
         var user = userRepository.findUserByUsername(((CustomUserDetails) auth.getPrincipal()).getUsername());
@@ -93,6 +97,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var refreshToken = jwtService.generateRefreshToken(user.getUsername());
         revokeAllTokens(user);
         saveUserToken(user, jwt);
+
+        Cookie jwtCookie = createAuthCookie("access-token", jwt);
+        Cookie refreshTokenCookie = createAuthCookie("refresh-token", refreshToken);
+
+
+        response.addCookie(jwtCookie);
+        response.addCookie(refreshTokenCookie);
         return AuthResponse.builder().accessToken(jwt).refreshToken(refreshToken).userId(user.getId()).build();
     }
 
@@ -123,6 +134,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     }
 
+    @Transactional
+    @Override
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new EntityNotFoundException("User not found with Id: "+userId)
+        );
+
+
+        if (passwordEncoder.matches(user.getPassword(), request.getOldPassword())) {
+            throw new BadRequestException("L'ancien mot de passe est incorrect");
+        }
+        String hashedNewPassword = passwordEncoder.encode(request.getOldPassword());
+
+        user.setPassword(hashedNewPassword);
+        userRepository.save(user);
+    }
+
     private void saveUserToken(User user, String accessToken) {
         Token token = new Token();
         token.setToken(accessToken);
@@ -139,7 +167,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             token.setRevoked(true);
         }
         tokenRepository.saveAll(validUserTokens);
-
     }
+
+
+    private Cookie createAuthCookie(String name, String value) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setSecure(true);
+        cookie.setMaxAge(4200);
+        cookie.setPath("/");
+        cookie.setAttribute("SameSite", "Strict");
+//        jwtCookie.setHttpOnly(true);
+
+        return cookie;
+    }
+
+
 
 }

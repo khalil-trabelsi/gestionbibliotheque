@@ -14,6 +14,8 @@ import com.isima.gestionbibliotheque.service.BookService;
 import com.isima.gestionbibliotheque.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -79,6 +81,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @Cacheable("books")
     public List<BookDto> findBooks(String isbn, String title, String authorName, String publisherName) throws JsonProcessingException {
         List<BookDto> result = new ArrayList<>();
         log.info("book title: "+title);
@@ -123,6 +126,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable("books")
     public BookDto getBookById(Long bookId) {
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find book with ID %d", bookId))
@@ -138,6 +142,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict("books")
     public void deleteBookFromLibrary(Long userId, Long bookId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findUserByUsername(authentication.getName());

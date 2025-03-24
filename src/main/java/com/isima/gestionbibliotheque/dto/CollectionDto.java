@@ -26,8 +26,8 @@ public class CollectionDto {
     private String name;
     private String description;
 
-    @JsonProperty("isPublic")
-    private boolean isPublic;
+    @JsonProperty("isShareable")
+    private boolean isShareable;
 
     private Date createdAt;
 
@@ -42,7 +42,7 @@ public class CollectionDto {
         collection.setId(collectionDto.getId());
         collection.setUser(collectionDto.getUser());
         collection.setName(collectionDto.getName());
-        collection.setShareable(collectionDto.isPublic());
+        collection.setShareable(collectionDto.isShareable());
         collection.setDescription(collectionDto.getDescription());
         collection.setCreatedAt(collectionDto.getCreatedAt());
         collection.setBooks(collectionDto.getBooks());
@@ -60,7 +60,7 @@ public class CollectionDto {
                         .user(collection.getUser())
                         .books(collection.getBooks())
                         .createdAt(collection.getCreatedAt())
-                        .isPublic(collection.isShareable())
+                        .isShareable(collection.isShareable())
                         .build();
     }
 }

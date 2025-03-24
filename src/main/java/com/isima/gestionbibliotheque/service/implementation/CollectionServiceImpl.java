@@ -15,6 +15,9 @@ import com.isima.gestionbibliotheque.service.CollectionService;
 import com.isima.gestionbibliotheque.service.UserBookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -52,16 +55,19 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
+    @Cacheable(value = "collections")
     public List<CollectionDto> getAllCollections() {
         return collectionRepository.findAllByShareable(true).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
+    @Cacheable("collections")
     public List<CollectionDto> getAllCollectionsByBookId(Long bookID) {
         return collectionRepository.findAllByBooksId(bookID).stream().filter(Collection::isShareable).map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
+    @Cacheable("collections")
     public List<CollectionDto> getAllCollectionsByUserId(Long userId) {
         var user = userRepository.findById(userId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find user with id %d", userId))
@@ -122,6 +128,7 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     @Transactional
+    @CachePut("collections")
     public CollectionDto updateCollection(UpdateCollectionDto dto, Long collectionId, String key) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -182,6 +189,7 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
+    @CacheEvict("collections")
     public void deleteCollection(Long collectionId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () ->  new EntityNotFoundException(String.format("Cannot find collection %d", collectionId))
@@ -199,6 +207,7 @@ public class CollectionServiceImpl implements CollectionService {
 
 
     @Override
+    @CachePut(value = "collections", key = "#collectionId")
     public CollectionDto addBookToCollection(Long collectionId, Long bookId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find collection with ID %d", collectionId))
