@@ -1,6 +1,7 @@
 package com.isima.gestionbibliotheque.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -34,6 +35,7 @@ public class UserBook {
     private User user;
 
     @ManyToOne
+    @JsonIgnoreProperties({"userBooks"})
     private Book book;
 
     @OneToMany(mappedBy = "userBook")
