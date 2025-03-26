@@ -33,5 +33,6 @@ build/
 .vscode/
 
 ### H2 DB Generated file ###
-db.mv.db
-db.trace.db
+db*
+*.mv.db
+*.trace.db
