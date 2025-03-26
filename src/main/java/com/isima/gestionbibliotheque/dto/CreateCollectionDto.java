@@ -17,6 +17,6 @@ public class CreateCollectionDto {
     @NotBlank(message = "Le champ 'nom' est obligatoire")
     private String name;
     private String description;
-    @JsonProperty("isPublic")
-    private boolean isPublic;
+    @JsonProperty("isShareable")
+    private boolean isShareable;
 }
