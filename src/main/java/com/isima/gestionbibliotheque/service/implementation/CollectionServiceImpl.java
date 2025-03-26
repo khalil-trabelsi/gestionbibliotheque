@@ -57,7 +57,9 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     @Cacheable(value = "collections")
     public List<CollectionDto> getAllCollections() {
-        return collectionRepository.findAllByShareable(true).stream().map(CollectionDto::fromEntity).collect(Collectors.toList());
+        List<CollectionDto> collectionDtos = collectionRepository.findAllByShareable(true).stream().map(CollectionDto::fromEntity).toList();
+        log.info("collections count: "+collectionDtos.size());
+        return collectionDtos;
     }
 
     @Override
