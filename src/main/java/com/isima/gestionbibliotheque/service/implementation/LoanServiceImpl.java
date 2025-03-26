@@ -9,6 +9,7 @@ import com.isima.gestionbibliotheque.repository.*;
 import com.isima.gestionbibliotheque.service.LoanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +41,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public LoanDto borrowBook(BorrowBookRequest borrowBookRequest) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -80,6 +82,7 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public LoanDto returnBorrowedBook(Long loanId) {
         Loan loan = loanRepository.findById(loanId).orElseThrow(
                 () -> new OperationNotPermittedException("You did not borrow this book")

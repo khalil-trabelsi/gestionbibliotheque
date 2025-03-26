@@ -20,8 +20,8 @@ public class JwtServiceImpl implements JwtService {
             "mySuperSecretKeyForJWTSigning123456789012345".getBytes(StandardCharsets.UTF_8)
     );
 //    public static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 24*60*60*60;
-    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 7*24*60*60*60;
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 2 * 24 * 60 * 60 * 1000;
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;
 
 
     public String generateToken(String username) {

@@ -23,4 +23,6 @@ public interface CollectionService {
 
     CollectionDto addBookToCollection(Long collectionId, Long bookId);
 
+    void removeBookFromCollection(Long collectionId, Long bookId, String key);
+
 }

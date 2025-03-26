@@ -1,6 +1,7 @@
 package com.isima.gestionbibliotheque.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,15 +25,12 @@ public class UserBook {
 
     private String location;
 
-    private double rating;
-
-    private String comment;
-
     @Enumerated(EnumType.STRING)
     private BookStatus status;
 
     @ManyToOne
     @JsonManagedReference
+    @JsonIncludeProperties({"id", "username"})
     private User user;
 
     @ManyToOne

@@ -38,6 +38,7 @@ public class AccessKey {
         createdAt = new Date();
     }
 
+    @Transient
     public boolean isExpired() {
         return expiredAt.before(new Date());
     }

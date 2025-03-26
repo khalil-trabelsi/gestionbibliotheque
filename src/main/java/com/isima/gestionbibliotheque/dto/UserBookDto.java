@@ -17,8 +17,6 @@ import java.util.List;
 public class UserBookDto {
     private Long id;
     private String location;
-    private double rating;
-    private String comment;
     private BookStatus status;
     @JsonIncludeProperties({"id", "username"})
     private User user;
@@ -32,13 +30,10 @@ public class UserBookDto {
         UserBook userBook = new UserBook();
         userBook.setId(userBookDto.getId());
         userBook.setBook(userBookDto.getBook());
-        userBook.setComment(userBookDto.getComment());
         userBook.setUser(userBookDto.getUser());
         userBook.setTags(userBookDto.getTags());
-        userBook.setRating(userBookDto.getRating());
         userBook.setLocation(userBookDto.getLocation());
         userBook.setStatus(userBookDto.getStatus());
-//        userBook.setCollections(userBookDto.getCollections());
 
         return userBook;
     }
@@ -51,11 +46,8 @@ public class UserBookDto {
                 .book(userBook.getBook())
                 .user(userBook.getUser())
                 .tags(userBook.getTags())
-                .rating(userBook.getRating())
                 .location(userBook.getLocation())
                 .status(userBook.getStatus())
-                .comment(userBook.getComment())
-//                .collections(userBook.getCollections())
                 .build();
     }
 }

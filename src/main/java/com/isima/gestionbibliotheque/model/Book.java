@@ -1,6 +1,7 @@
 package com.isima.gestionbibliotheque.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,7 +33,7 @@ public class Book {
     private Date createdAt;
     @ManyToMany
     private List<Author> authors = new ArrayList<>();
-    @JsonIgnore
+    @JsonIncludeProperties({"id", "user"})
     @OneToMany(mappedBy = "book")
     private List<UserBook> userBooks = new ArrayList<>();
 
@@ -41,7 +42,7 @@ public class Book {
 
     @JsonIgnore
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookFeedback> bookFeedback;
+    private List<BookFeedback> bookFeedback = new ArrayList<>();
 
     @ManyToMany(mappedBy = "books")
     @JsonIgnore

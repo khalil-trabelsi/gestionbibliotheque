@@ -41,6 +41,7 @@ public class BookFeedbackServiceImpl implements BookFeedbackService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public BookFeedbackDto addBookFeedback(FeedbackRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = userRepository.findUserByUsername(authentication.getName());
@@ -75,7 +76,6 @@ public class BookFeedbackServiceImpl implements BookFeedbackService {
     }
 
     @Override
-    @Cacheable(value = "bookFeedback")
     public List<BookFeedbackDto> getAllBookFeedbackByBookId(Long bookId) {
         bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find book with Id %d", bookId))
@@ -96,6 +96,7 @@ public class BookFeedbackServiceImpl implements BookFeedbackService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public BookFeedbackDto updateBookFeedback(Long feedbackId, UpdateFeedbackRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = userRepository.findUserByUsername(authentication.getName());
@@ -135,7 +136,7 @@ public class BookFeedbackServiceImpl implements BookFeedbackService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "bookFeedbacks", key="#feedbackId")
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public void deleteBookFeedback(Long feedbackId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = userRepository.findUserByUsername(authentication.getName());

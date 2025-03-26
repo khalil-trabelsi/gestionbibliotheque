@@ -81,7 +81,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    @Cacheable("books")
+    @CacheEvict(value = "books", allEntries = true)
     public List<BookDto> findBooks(String isbn, String title, String authorName, String publisherName) throws JsonProcessingException {
         List<BookDto> result = new ArrayList<>();
         log.info("book title: "+title);
@@ -120,13 +120,12 @@ public class BookServiceImpl implements BookService {
 
     }
 
-
+    @Cacheable("books")
     public List<BookDto> getAllBooks() {
         return bookRepository.findAll().stream().map(BookDto::fromEntity).toList();
     }
 
     @Override
-    @Cacheable("books")
     public BookDto getBookById(Long bookId) {
         Book book = bookRepository.findById(bookId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find book with ID %d", bookId))
@@ -142,7 +141,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    @CacheEvict("books")
+    @CacheEvict(value = "books", allEntries = true)
     public void deleteBookFromLibrary(Long userId, Long bookId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findUserByUsername(authentication.getName());

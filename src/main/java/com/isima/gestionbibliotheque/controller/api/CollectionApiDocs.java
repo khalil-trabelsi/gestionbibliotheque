@@ -279,4 +279,36 @@ public interface CollectionApiDocs {
     @PostMapping("/add_book")
     ResponseEntity<CollectionDto> addBookToCollection(@RequestBody BookCollectionRequest bookCollectionRequest);
 
+
+    @Operation(
+            summary = "Remove book from collection",
+            description = "Deletes a book from a collection based on the provided collection ID and book Id. Only authorized users can perform this action.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Book successfully deleted from collection.",
+                            content = @Content(schema = @Schema(implementation = Map.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "403",
+                            description = "Forbidden. User does not have permission to delete this collection.",
+                            content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Not Found. The specified collection ID / Book Id does not exist.",
+                            content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Internal Server Error. An unexpected error occurred.",
+                            content = @Content(schema = @Schema(implementation = ErrorEntity.class))
+                    )
+            }
+    )
+    @DeleteMapping("/{collectionId}/remove-book")
+    ResponseEntity<Map<String, String>> removeBookFromCollection(
+            @PathVariable Long collectionId,
+            @RequestParam Long bookId,
+            @RequestParam(required = false) String key);
 }

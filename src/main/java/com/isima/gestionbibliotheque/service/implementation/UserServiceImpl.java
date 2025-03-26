@@ -13,6 +13,7 @@ import com.isima.gestionbibliotheque.service.JwtService;
 import com.isima.gestionbibliotheque.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -62,6 +63,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public UserDto updateUser(Long userId, UpdateUserDto request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

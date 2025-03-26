@@ -109,4 +109,10 @@ public class CollectionController implements CollectionApiDocs {
         CollectionDto collection = collectionService.addBookToCollection(bookCollectionRequest.getCollectionId(), bookCollectionRequest.getBookId());
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(collection);
     }
+
+    @Override
+    public ResponseEntity<Map<String, String>> removeBookFromCollection(Long collectionId, Long bookId, String key) {
+        collectionService.removeBookFromCollection(collectionId, bookId, key);
+        return ResponseEntity.ok(Map.of("success", String.format("Book with Id %d successfully deleted from collection with Id %d ", bookId, collectionId)));
+    }
 }

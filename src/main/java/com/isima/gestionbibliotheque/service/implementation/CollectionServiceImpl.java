@@ -57,18 +57,18 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     @Cacheable(value = "collections")
     public List<CollectionDto> getAllCollections() {
-        return collectionRepository.findAllByShareable(true).stream().map(CollectionDto::fromEntity).toList();
+        List<Collection> collections = collectionRepository.findAllByShareable(true);
+        log.info("Collection size : "+ collections.size());
+        return collections.stream().map(CollectionDto::fromEntity).toList();
 
     }
 
     @Override
-    @Cacheable("collections")
     public List<CollectionDto> getAllCollectionsByBookId(Long bookID) {
         return collectionRepository.findAllByBooksId(bookID).stream().filter(Collection::isShareable).map(CollectionDto::fromEntity).collect(Collectors.toList());
     }
 
     @Override
-    @Cacheable("collections")
     public List<CollectionDto> getAllCollectionsByUserId(Long userId) {
         var user = userRepository.findById(userId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find user with id %d", userId))
@@ -113,6 +113,7 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "collections", allEntries = true)
     public CollectionDto createCollection(CreateCollectionDto dto, String username) {
 
         User user = userRepository.findUserByUsername(username);
@@ -129,9 +130,13 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     @Transactional
-    @CachePut("collections")
+    @CachePut(value = "collections", key = "#collectionId")
     public CollectionDto updateCollection(UpdateCollectionDto dto, Long collectionId, String key) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Access check: if the user is neither authenticated nor authorized via a key
+        if (!(authentication != null && authentication.isAuthenticated()) && key == null) {
+            throw new AccessDeniedException("You don't have permission to modify this collection");
+        }
 
         List<String> bookErrors = new ArrayList<>();
         List<Book> existingBooks = new ArrayList<>();
@@ -170,7 +175,7 @@ public class CollectionServiceImpl implements CollectionService {
                 collection.setBooks(existingBooks);
                 collection.setName(dto.getName());
                 collection.setDescription(dto.getDescription());
-                collection.setShareable(dto.isPublic());
+                collection.setShareable(dto.isShareable());
                 return CollectionDto.fromEntity(collectionRepository.save(collection));
             }
         }
@@ -178,7 +183,7 @@ public class CollectionServiceImpl implements CollectionService {
         // Check access with a key
         if (key != null) {
             AccessKey accessKey = accessKeyService.getAccessKeyById(UUID.fromString(key));
-            if (accessKey.getPermissions().contains(Permission.COLLECTION_UPDATE)) {
+            if (!accessKey.isExpired() && accessKey.getPermissions().contains(Permission.COLLECTION_UPDATE)) {
                 collection.setBooks(existingBooks);
                 collection.setName(dto.getName());
                 collection.setDescription(dto.getDescription());
@@ -190,7 +195,7 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @CacheEvict("collections")
+    @CacheEvict(value = "collections", allEntries = true)
     public void deleteCollection(Long collectionId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () ->  new EntityNotFoundException(String.format("Cannot find collection %d", collectionId))
@@ -208,7 +213,7 @@ public class CollectionServiceImpl implements CollectionService {
 
 
     @Override
-    @CachePut(value = "collections", key = "#collectionId")
+    @CacheEvict(value = "collections", allEntries = true)
     public CollectionDto addBookToCollection(Long collectionId, Long bookId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find collection with ID %d", collectionId))
@@ -235,5 +240,50 @@ public class CollectionServiceImpl implements CollectionService {
 
         throw new AccessDeniedException("You don't have permission to modify this collection");
 
+    }
+
+    @Override
+    public void removeBookFromCollection(Long collectionId, Long bookId, String key) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Access check: if the user is neither authenticated nor authorized via a key
+        if (!(authentication != null && authentication.isAuthenticated()) && key == null) {
+            throw new AccessDeniedException("You don't have permission to modify this collection");
+        }
+
+        Collection collection = collectionRepository.findById(collectionId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Cannot find collection with ID %d", collectionId))
+        );
+
+        Book existingBook = bookRepository.findById(bookId).orElseThrow(
+                () -> new EntityNotFoundException("Cannot find book")
+        );
+
+        // Check permissions, either by user or by access key
+        if (hasPermissionToModifyCollection(authentication, collection, key)) {
+            if (collection.getBooks().contains(existingBook)) {
+
+                collection.getBooks().remove(existingBook);
+                collectionRepository.save(collection);
+            } else {
+                throw new EntityNotFoundException("Book not found in this collection");
+            }
+        } else {
+            throw new AccessDeniedException("You don't have permission to modify this collection");
+        }
+    }
+
+
+    private boolean hasPermissionToModifyCollection(Authentication authentication, Collection collection, String key) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            return collection.getUser().getUsername().equals(authentication.getName());
+        }
+
+        if (key != null) {
+            AccessKey accessKey = accessKeyService.getAccessKeyById(UUID.fromString(key));
+            return !accessKey.isExpired() && accessKey.getPermissions().contains(Permission.COLLECTION_UPDATE) ;
+        }
+
+        return false;
     }
 }

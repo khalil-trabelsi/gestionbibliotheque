@@ -12,8 +12,8 @@ import java.util.List;
 public class UpdateCollectionDto {
     private String name;
     private String description;
-    @JsonProperty("isPublic")
-    private boolean isPublic;
+    @JsonProperty("isShareable")
+    private boolean isShareable;
     private List<Long> booksId;
 
 }

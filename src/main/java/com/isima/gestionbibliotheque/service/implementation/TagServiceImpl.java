@@ -11,6 +11,7 @@ import com.isima.gestionbibliotheque.repository.UserBookRepository;
 import com.isima.gestionbibliotheque.repository.UserRepository;
 import com.isima.gestionbibliotheque.service.TagsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,7 @@ public class TagServiceImpl implements TagsService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public TagDto createTag(CreateTagDto createTagDto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findUserByUsername(username);
@@ -67,6 +69,7 @@ public class TagServiceImpl implements TagsService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public TagDto updateTag(TagDto tagDto) {
         Tag tag = tagRepository.findById(tagDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
@@ -85,6 +88,7 @@ public class TagServiceImpl implements TagsService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public void deleteTag(Long id) {
         tagRepository.deleteById(id);
     }

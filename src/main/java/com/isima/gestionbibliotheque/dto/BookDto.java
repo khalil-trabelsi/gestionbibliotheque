@@ -30,7 +30,7 @@ public class BookDto {
     private Date createdAt;
     private String numberOfPages;
     private List<Author> authors;
-    @JsonIncludeProperties({"id", "status", "location", "rating", "tags"})
+    @JsonIncludeProperties({"id", "status", "location", "rating", "tags", "user"})
     private List<UserBook> userBooks = new ArrayList<>();
     private CoverImage coverImage;
     @JsonIgnoreProperties({"book", "user"})
