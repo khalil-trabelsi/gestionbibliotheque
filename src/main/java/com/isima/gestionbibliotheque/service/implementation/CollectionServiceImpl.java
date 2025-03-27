@@ -130,7 +130,7 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     @Transactional
-    @CachePut(value = "collections", key = "#collectionId")
+    @CacheEvict(value = "collections", allEntries = true)
     public CollectionDto updateCollection(UpdateCollectionDto dto, Long collectionId, String key) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // Access check: if the user is neither authenticated nor authorized via a key
@@ -195,7 +195,7 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @CacheEvict(value = "collections", allEntries = true)
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public void deleteCollection(Long collectionId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () ->  new EntityNotFoundException(String.format("Cannot find collection %d", collectionId))
@@ -213,7 +213,7 @@ public class CollectionServiceImpl implements CollectionService {
 
 
     @Override
-    @CacheEvict(value = "collections", allEntries = true)
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
     public CollectionDto addBookToCollection(Long collectionId, Long bookId) {
         Collection collection = collectionRepository.findById(collectionId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Cannot find collection with ID %d", collectionId))
@@ -243,6 +243,8 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
+    @CacheEvict(value = {"collections", "books"}, allEntries = true)
+    @Transactional
     public void removeBookFromCollection(Long collectionId, Long bookId, String key) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
